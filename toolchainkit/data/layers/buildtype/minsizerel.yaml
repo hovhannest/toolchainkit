@@ -1,0 +1,16 @@
+type: buildtype
+name: minsizerel
+description: "Minimum size release build"
+
+flags:
+  compile:
+    - "-Os"
+    - "-DNDEBUG"
+  link:
+    - "-Os"
+
+defines:
+  - "NDEBUG"
+
+cmake_variables:
+  CMAKE_BUILD_TYPE: "MinSizeRel"

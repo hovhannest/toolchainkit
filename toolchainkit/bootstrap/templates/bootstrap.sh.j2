@@ -1,0 +1,155 @@
+#!/bin/bash
+# ToolchainKit Bootstrap Script
+# Generated automatically - do not edit manually
+# Project: {{ project_name }}
+# Toolchain: {{ toolchain }}
+
+
+set -e
+
+echo "Bootstrapping {{ project_name }}..."
+echo ""
+
+# Platform compatibility check
+PLATFORM_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+PLATFORM_ARCH=$(uname -m)
+
+# Normalize architecture names
+case "$PLATFORM_ARCH" in
+    x86_64|amd64)
+        PLATFORM_ARCH="x64"
+        ;;
+    aarch64|arm64)
+        PLATFORM_ARCH="arm64"
+        ;;
+esac
+
+# Detect platform
+if [[ "$PLATFORM_OS" == "linux" ]]; then
+    PLATFORM="linux-$PLATFORM_ARCH"
+elif [[ "$PLATFORM_OS" == "darwin" ]]; then
+    PLATFORM="macos-$PLATFORM_ARCH"
+else
+    PLATFORM="$PLATFORM_OS-$PLATFORM_ARCH"
+fi
+
+echo "Detected platform: $PLATFORM"
+
+# Validate compiler compatibility for this platform
+TOOLCHAIN_TYPE="{{ toolchain | lower }}"
+COMPATIBLE=1
+
+# GCC compatibility check
+if [[ "$TOOLCHAIN_TYPE" == *"gcc"* ]]; then
+    if [[ "$PLATFORM_OS" == "darwin" ]]; then
+        echo "ERROR: GCC is not supported on macOS in toolchainkit"
+        echo "       macOS uses Apple Clang as the primary compiler"
+        echo "       Please use LLVM/Clang toolchain instead"
+        COMPATIBLE=0
+    fi
+fi
+
+# MSVC compatibility check
+if [[ "$TOOLCHAIN_TYPE" == *"msvc"* ]]; then
+    if [[ "$PLATFORM_OS" != "windows" ]] && [[ "$PLATFORM_OS" != "mingw"* ]] && [[ "$PLATFORM_OS" != "cygwin"* ]]; then
+        echo "ERROR: MSVC is only available on Windows"
+        echo "       For $PLATFORM, use LLVM/Clang or GCC instead"
+        COMPATIBLE=0
+    fi
+fi
+
+if [ $COMPATIBLE -eq 0 ]; then
+    echo ""
+    echo "Bootstrap aborted due to incompatible configuration"
+    exit 1
+fi
+
+echo ""
+
+{% if env_vars %}
+# Environment Variables
+echo "Setting environment variables..."
+{% for key, value in env_vars.items() %}
+export {{ key }}="{{ value }}"
+{% endfor %}
+echo ""
+{% endif %}
+
+# Check Python 3
+echo "Checking Python..."
+if ! command -v python3 &> /dev/null; then
+    echo "ERROR: Python 3 is required but not installed"
+    echo "       Please install Python 3.8 or later from https://www.python.org/"
+    exit 1
+fi
+
+PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}')
+echo "Python $PYTHON_VERSION found"
+
+# Check/install ToolchainKit
+echo ""
+echo "Checking ToolchainKit..."
+if ! command -v tkgen &> /dev/null; then
+    echo "Installing ToolchainKit..."
+    pip3 install --user toolchainkit
+
+    # Add pip user bin to PATH if needed
+    export PATH="$HOME/.local/bin:$PATH"
+else
+    TKGEN_VERSION=$(tkgen --version 2>&1 || echo "unknown")
+    echo "ToolchainKit found ($TKGEN_VERSION)"
+fi
+
+{% if hooks.pre_configure %}
+# Run pre_configure hook
+echo ""
+echo "Running pre_configure hook..."
+if [ -f "{{ hooks.pre_configure }}" ]; then
+    bash "{{ hooks.pre_configure }}"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: pre_configure hook failed"
+        exit 1
+    fi
+else
+    echo "WARNING: pre_configure hook script not found: {{ hooks.pre_configure }}"
+fi
+{% endif %}
+
+# Run ToolchainKit Bootstrap
+echo ""
+echo "Running ToolchainKit bootstrap..."
+tkgen {% if config_file %}--config "{{ config_file }}" {% endif %}configure \
+    --toolchain "{{ toolchain }}" \
+    --build-type "{{ build_type }}" \
+    --build-dir "{{ build_dir }}" \
+    --bootstrap \
+    {% if cmake_args %}{% for arg in cmake_args %}--cmake-args "{{ arg }}" {% endfor %}{% endif %}
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Bootstrap failed"
+    exit 1
+fi
+
+{% if hooks.post_configure %}
+# Run post_configure hook
+echo ""
+echo "Running post_configure hook..."
+if [ -f "{{ hooks.post_configure }}" ]; then
+    bash "{{ hooks.post_configure }}"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: post_configure hook failed"
+        exit 1
+    fi
+else
+    echo "WARNING: post_configure hook script not found: {{ hooks.post_configure }}"
+fi
+{% endif %}
+
+echo ""
+echo "Bootstrap complete!"
+echo ""
+echo "To build the project:"
+echo "  cmake --build {{ build_dir }} --config {{ build_type }}"
+echo ""
+echo "To run tests (if available):"
+echo "  cd {{ build_dir }} && ctest -C {{ build_type }}"

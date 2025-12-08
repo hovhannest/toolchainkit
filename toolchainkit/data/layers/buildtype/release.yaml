@@ -1,0 +1,17 @@
+type: buildtype
+name: release
+description: "Release build with maximum optimization"
+
+flags:
+  compile:
+    - "-O3"
+    - "-DNDEBUG"
+    - "-fomit-frame-pointer"
+  link:
+    - "-O3"
+
+defines:
+  - "NDEBUG"
+
+cmake_variables:
+  CMAKE_BUILD_TYPE: "Release"

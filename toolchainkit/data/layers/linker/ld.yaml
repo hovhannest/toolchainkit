@@ -1,0 +1,88 @@
+# GNU ld (Default Linker) Layer Configuration
+# Standalone linker layer for the traditional GNU linker
+
+name: "ld"
+display_name: "GNU ld (Default Linker)"
+type: "linker"
+
+# Description
+description: |
+  GNU ld is the traditional linker from the GNU Binutils project. It's the
+  default linker on most Unix-like systems and is ubiquitous and well-tested,
+  but slower than modern alternatives.
+
+# Linker selection flag
+flag: "-fuse-ld=ld"
+
+# Supported platforms
+supported_platforms:
+  - "linux"
+  - "macos"                       # macOS uses its own ld (ld64)
+  - "android"
+
+# Supported compilers
+supported_compilers:
+  - "gcc"
+  - "clang"
+
+# Linker-specific flags (optional)
+linker_flags:
+  # Debug flags
+  debug:
+    - "--verbose"                 # Verbose output
+    - "--print-gc-sections"       # Print garbage-collected sections
+    - "--print-map"               # Print link map
+
+  # Optimization flags
+  optimization:
+    - "--gc-sections"             # Remove unused sections
+
+# Platform-specific settings
+platform_overrides:
+  linux:
+    executable: "ld"              # GNU ld on Linux
+
+  macos:
+    executable: "ld"              # Apple ld (ld64) on macOS
+    flag: ""                      # Default linker, no flag needed
+
+  android:
+    executable: "ld"              # Android NDK linker
+
+# Performance characteristics
+performance:
+  speed: "slow"                   # Baseline speed (slowest of common linkers)
+  memory_usage: "low"             # Efficient memory usage
+  parallel: false                 # Single-threaded
+
+# Feature support
+features:
+  thin_lto: false                 # Does not support Thin LTO
+  full_lto: false                 # Limited LTO support (requires plugin)
+  gc_sections: true               # Garbage collection of unused sections
+  icf: false                      # No identical code folding
+  build_id: true                  # Build ID generation
+  compress_debug: true            # Debug section compression
+
+# Usage notes
+notes: |
+  GNU ld is the default linker on most Unix-like systems. While it's slower
+  than modern alternatives (lld, gold, mold), it's stable, well-tested, and
+  ubiquitous.
+
+  Usage:
+    tkgen configure --layers base/gcc-13,linker/ld
+
+  You typically don't need to explicitly select GNU ld as it's the default.
+  Consider using it when:
+    - Maximum compatibility is required
+    - Debugging linker issues
+    - Working on systems without modern linkers
+
+  For faster builds, consider alternatives:
+    - mold: 5-10x faster (Linux only)
+    - lld: 2-3x faster (cross-platform)
+    - gold: 1.5-2x faster (Linux only)
+
+  GNU ld is a fallback option when faster linkers are unavailable or
+  incompatible with your toolchain/platform.

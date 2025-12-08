@@ -1,0 +1,18 @@
+type: buildtype
+name: relwithdebinfo
+description: "Release with debug info for profiling"
+
+flags:
+  compile:
+    - "-O2"
+    - "-g"
+    - "-DNDEBUG"
+  link:
+    - "-O2"
+    - "-g"
+
+defines:
+  - "NDEBUG"
+
+cmake_variables:
+  CMAKE_BUILD_TYPE: "RelWithDebInfo"

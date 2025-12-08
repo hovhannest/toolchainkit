@@ -1,0 +1,25 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: Android (arm64)
+toolchains:
+  llvm-18:
+    type: llvm
+    version: 18.1.8
+    stdlib: libc++
+defaults:
+  toolchain: llvm-18
+  build_type: Release
+  generator: Ninja
+build:
+  types:
+  - Release
+  parallel_jobs: auto
+cross:
+  enabled: true
+  target: android
+  android:
+    abi: arm64-v8a
+    api_level: 30
+    ndk_path: /opt/android-ndk

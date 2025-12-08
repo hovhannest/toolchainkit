@@ -1,0 +1,15 @@
+type: optimization
+name: pgo-optimized
+description: "PGO optimization phase (use after instrumentation)"
+
+requires:
+  compiler: [clang, gcc]
+
+flags:
+  compile:
+    - "-fprofile-use={{pgo_dir}}/code.profdata"
+  link:
+    - "-fprofile-use={{pgo_dir}}/code.profdata"
+
+defines:
+  - "PGO_OPTIMIZED=1"

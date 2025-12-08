@@ -1,0 +1,24 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: LLVM + Ninja (Release)
+toolchain_cache:
+  location: local
+  path: .toolchainkit
+packages:
+  manager: conan
+  conan_home: .toolchainkit/conan
+toolchains:
+  llvm-18:
+    type: llvm
+    version: 18.1.8
+    stdlib: libc++
+defaults:
+  toolchain: llvm-18
+  build_type: Release
+  generator: Ninja
+build:
+  types:
+  - Release
+  parallel_jobs: auto

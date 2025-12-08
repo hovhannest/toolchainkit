@@ -1,0 +1,115 @@
+# ToolchainKit Bootstrap Script
+# Generated automatically - do not edit manually
+# Project: {{ project_name }}
+# Toolchain: {{ toolchain }}
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "Bootstrapping {{ project_name }}..." -ForegroundColor Green
+Write-Host ""
+
+# Platform compatibility check
+Write-Host "Detected platform: Windows" -ForegroundColor Cyan
+$ToolchainType = "{{ toolchain | lower }}"
+
+# GCC compatibility check
+if ($ToolchainType -match "gcc") {
+    Write-Host "ERROR: GCC is not supported on Windows in toolchainkit" -ForegroundColor Red
+    Write-Host "       Use LLVM/Clang or MSVC toolchain instead" -ForegroundColor Red
+    Write-Host "       MinGW/MinGW-w64 support may be added in future releases" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
+
+{% if env_vars %}
+# Environment Variables
+Write-Host "Setting environment variables..." -ForegroundColor Cyan
+{% for key, value in env_vars.items() %}
+$env:{{ key }} = "{{ value }}"
+{% endfor %}
+Write-Host ""
+{% endif %}
+
+# Check Python
+Write-Host "Checking Python..." -ForegroundColor Cyan
+try {
+    $pythonVersion = python --version 2>&1 | Out-String
+    Write-Host "Python found: $pythonVersion"
+} catch {
+    Write-Host "ERROR: Python is required but not installed" -ForegroundColor Red
+    Write-Host "       Please install Python 3.8 or later from https://www.python.org/" -ForegroundColor Red
+    exit 1
+}
+
+# Check/install ToolchainKit
+Write-Host ""
+Write-Host "Checking ToolchainKit..." -ForegroundColor Cyan
+try {
+    $tkgenVersion = tkgen --version 2>&1 | Out-String
+    Write-Host "ToolchainKit found: $tkgenVersion"
+} catch {
+    Write-Host "Installing ToolchainKit..." -ForegroundColor Yellow
+    pip install --user toolchainkit
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to install ToolchainKit" -ForegroundColor Red
+        exit 1
+    }
+}
+
+{% if hooks.pre_configure %}
+# Run pre_configure hook
+Write-Host ""
+Write-Host "Running pre_configure hook..." -ForegroundColor Cyan
+if (Test-Path "{{ hooks.pre_configure }}") {
+    & "{{ hooks.pre_configure }}"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: pre_configure hook failed" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "WARNING: pre_configure hook script not found: {{ hooks.pre_configure }}" -ForegroundColor Yellow
+}
+{% endif %}
+
+# Run ToolchainKit Bootstrap
+Write-Host ""
+Write-Host "Running ToolchainKit bootstrap..." -ForegroundColor Cyan
+
+$tkgenArgs = @({% if config_file %}"--config", "{{ config_file }}", {% endif %}"configure", "--toolchain", "{{ toolchain }}", "--build-type", "{{ build_type }}", "--build-dir", "{{ build_dir }}", "--bootstrap")
+{% if cmake_args %}
+{% for arg in cmake_args %}
+$tkgenArgs += "--cmake-args", "{{ arg }}"
+{% endfor %}
+{% endif %}
+
+& tkgen @tkgenArgs
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Bootstrap failed" -ForegroundColor Red
+    exit 1
+}
+
+{% if hooks.post_configure %}
+# Run post_configure hook
+Write-Host ""
+Write-Host "Running post_configure hook..." -ForegroundColor Cyan
+if (Test-Path "{{ hooks.post_configure }}") {
+    & "{{ hooks.post_configure }}"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: post_configure hook failed" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "WARNING: post_configure hook script not found: {{ hooks.post_configure }}" -ForegroundColor Yellow
+}
+{% endif %}
+
+Write-Host ""
+Write-Host "Bootstrap complete!" -ForegroundColor Green
+Write-Host ""
+Write-Host "To build the project:"
+Write-Host "  cmake --build {{ build_dir }} --config {{ build_type }}"
+Write-Host ""
+Write-Host "To run tests (if available):"
+Write-Host "  cd {{ build_dir }}; ctest -C {{ build_type }}"

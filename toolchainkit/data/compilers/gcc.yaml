@@ -1,0 +1,187 @@
+# GCC (GNU Compiler Collection) Configuration
+# Production configuration for GCC toolchain
+
+# Compiler identification
+name: "gcc"
+display_name: "GCC (GNU Compiler Collection)"
+type: "gcc"
+compiler_family: "gcc"
+
+# Version detection
+version_command: ["--version"]
+version_regex: "gcc.*?(\\d+\\.\\d+\\.\\d+)"
+
+# Compiler executables
+executables:
+  c: "gcc"
+  cxx: "g++"
+  ar: "ar"
+  ranlib: "ranlib"
+
+# Build type flags
+flags:
+  debug:
+    - "-g"
+    - "-O0"
+    - "-fno-omit-frame-pointer"
+  release:
+    - "-O3"
+    - "-DNDEBUG"
+    - "-fomit-frame-pointer"
+  relwithdebinfo:
+    - "-g"
+    - "-O2"
+    - "-DNDEBUG"
+  minsizerel:
+    - "-Os"
+    - "-DNDEBUG"
+
+# Warning flags
+warning_levels:
+  "off": []
+  basic:
+    - "-Wall"
+    - "-Wextra"
+  extra:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+  strict:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+    - "-Woverloaded-virtual"
+  pedantic:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+    - "-Woverloaded-virtual"
+    - "-Wnull-dereference"
+    - "-Wdouble-promotion"
+    - "-Wformat=2"
+  error:
+    - "-Werror"
+
+# Language standards
+standards:
+  c:
+    default: "c17"
+    supported: ["c99", "c11", "c17", "c2x"]
+    flag_template: "-std={standard}"
+  cxx:
+    default: "c++20"
+    supported: ["c++11", "c++14", "c++17", "c++20", "c++23"]
+    flag_template: "-std={standard}"
+
+# Standard library configuration (GCC uses libstdc++ by default)
+stdlib:
+  libstdc++:
+    compile_flags: []
+    defines: []
+    link_flags: []
+    required_version: null
+  # GCC can use libc++ if installed separately
+  libc++:
+    compile_flags: ["-stdlib=libc++"]
+    defines: []
+    link_flags: ["-lc++", "-lc++abi"]
+    required_version: null
+
+# Linker configuration (references external layer files)
+linker:
+  ld:
+    flag: "-fuse-ld=ld"
+    supported_platforms: ["linux", "macos"]
+  gold:
+    flag: "-fuse-ld=gold"
+    supported_platforms: ["linux"]
+  bfd:
+    flag: "-fuse-ld=bfd"
+    supported_platforms: ["linux"]
+  mold:
+    flag: "-fuse-ld=mold"
+    supported_platforms: ["linux"]
+  lld:
+    flag: "-fuse-ld=lld"
+    supported_platforms: ["linux"]
+
+# Features (sanitizers, coverage, LTO)
+features:
+  # Sanitizers (GCC support varies by version)
+  sanitizers:
+    address:
+      compile_flags: ["-fsanitize=address", "-fno-omit-frame-pointer"]
+      link_flags: ["-fsanitize=address"]
+      supported_platforms: ["linux", "macos"]
+    undefined:
+      compile_flags: ["-fsanitize=undefined"]
+      link_flags: ["-fsanitize=undefined"]
+      supported_platforms: ["linux", "macos"]
+    thread:
+      compile_flags: ["-fsanitize=thread"]
+      link_flags: ["-fsanitize=thread"]
+      supported_platforms: ["linux"]
+    leak:
+      compile_flags: ["-fsanitize=leak"]
+      link_flags: ["-fsanitize=leak"]
+      supported_platforms: ["linux"]
+
+  # Code coverage (GCC uses --coverage flag)
+  coverage:
+    flags: ["--coverage"]
+    link_flags: ["--coverage"]
+
+  # Link-time optimization
+  lto:
+    full:
+      compile_flags: ["-flto"]
+      link_flags: ["-flto"]
+    thin:
+      compile_flags: ["-flto=thin"]
+      link_flags: ["-flto=thin"]
+
+# CMake integration
+cmake:
+  variables:
+    CMAKE_C_COMPILER: "{{toolchain_root}}/bin/gcc"
+    CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/g++"
+    CMAKE_AR: "{{toolchain_root}}/bin/gcc-ar"
+    CMAKE_RANLIB: "{{toolchain_root}}/bin/gcc-ranlib"
+    CMAKE_LINKER: "{{toolchain_root}}/bin/ld"
+  generator_toolset: null
+
+# Platform-specific overrides
+platform_overrides:
+  # Windows uses MinGW or MinGW-w64
+  windows:
+    executables:
+      c: "gcc.exe"
+      cxx: "g++.exe"
+      ar: "ar.exe"
+      ranlib: "ranlib.exe"
+    cmake:
+      variables:
+        CMAKE_C_COMPILER: "{{toolchain_root}}/bin/gcc.exe"
+        CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/g++.exe"
+        CMAKE_AR: "{{toolchain_root}}/bin/gcc-ar.exe"
+        CMAKE_RANLIB: "{{toolchain_root}}/bin/gcc-ranlib.exe"
+        CMAKE_LINKER: "{{toolchain_root}}/bin/ld.exe"
+
+  # macOS uses libstdc++ by default
+  macos:
+    default_stdlib: "libstdc++"

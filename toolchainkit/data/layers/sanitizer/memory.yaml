@@ -1,0 +1,20 @@
+type: sanitizer
+name: memory
+description: "MemorySanitizer - Detect uninitialized reads (Clang only)"
+
+requires:
+  compiler: [clang]
+
+conflicts_with:
+  sanitizer: [address, thread]
+
+flags:
+  compile:
+    - "-fsanitize=memory"
+    - "-fno-omit-frame-pointer"
+    - "-g"
+  link:
+    - "-fsanitize=memory"
+
+defines:
+  - "MSAN_ENABLED=1"

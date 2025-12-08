@@ -1,0 +1,216 @@
+# Clang/LLVM Compiler Configuration
+# Production configuration for Clang/LLVM toolchain
+
+# Compiler identification
+name: "clang"
+display_name: "Clang/LLVM"
+type: "clang"
+compiler_family: "clang"
+
+# Version detection
+version_command: ["--version"]
+version_regex: "clang version (\\d+\\.\\d+\\.\\d+)"
+
+# Compiler executables
+executables:
+  c: "clang"
+  cxx: "clang++"
+  ar: "llvm-ar"
+  ranlib: "llvm-ranlib"
+
+# Build type flags
+flags:
+  debug:
+    - "-g"
+    - "-O0"
+    - "-fno-omit-frame-pointer"
+  release:
+    - "-O3"
+    - "-DNDEBUG"
+    - "-fomit-frame-pointer"
+  relwithdebinfo:
+    - "-g"
+    - "-O2"
+    - "-DNDEBUG"
+  minsizerel:
+    - "-Os"
+    - "-DNDEBUG"
+
+# Warning flags (using "off" for no warnings to match ClangConfig behavior)
+warning_levels:
+  "off": []
+  basic:
+    - "-Wall"
+    - "-Wextra"
+  extra:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+  strict:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+    - "-Woverloaded-virtual"
+  pedantic:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+    - "-Woverloaded-virtual"
+    - "-Wnull-dereference"
+    - "-Wdouble-promotion"
+  error:
+    - "-Werror"
+
+# Language standards
+standards:
+  c:
+    default: "c17"
+    supported: ["c99", "c11", "c17", "c2x"]
+    flag_template: "-std={standard}"
+  cxx:
+    default: "c++20"
+    supported: ["c++11", "c++14", "c++17", "c++20", "c++23", "c++2b"]
+    flag_template: "-std={standard}"
+
+# Standard library configuration
+stdlib:
+  libc++:
+    compile_flags: ["-stdlib=libc++"]
+    defines: []
+    link_flags: ["-lc++", "-lc++abi"]
+    required_version: null
+  libstdc++:
+    compile_flags: ["-stdlib=libstdc++"]
+    defines: []
+    link_flags: []
+    required_version: null
+
+# Linker configuration (references external layer files)
+linker:
+  lld:
+    flag: "-fuse-ld=lld"
+    supported_platforms: ["linux", "windows", "macos"]
+  gold:
+    flag: "-fuse-ld=gold"
+    supported_platforms: ["linux"]
+  mold:
+    flag: "-fuse-ld=mold"
+    supported_platforms: ["linux"]
+  ld:
+    flag: "-fuse-ld=ld"
+    supported_platforms: ["linux", "macos"]
+
+# Features (sanitizers, coverage, LTO)
+features:
+  # Sanitizers
+  sanitizers:
+    address:
+      compile_flags: ["-fsanitize=address", "-fno-omit-frame-pointer"]
+      link_flags: ["-fsanitize=address"]
+      supported_platforms: ["linux", "macos", "windows"]
+    undefined:
+      compile_flags: ["-fsanitize=undefined"]
+      link_flags: ["-fsanitize=undefined"]
+      supported_platforms: ["linux", "macos", "windows"]
+    thread:
+      compile_flags: ["-fsanitize=thread"]
+      link_flags: ["-fsanitize=thread"]
+      supported_platforms: ["linux", "macos"]
+    memory:
+      compile_flags: ["-fsanitize=memory"]
+      link_flags: ["-fsanitize=memory"]
+      supported_platforms: ["linux"]
+    leak:
+      compile_flags: ["-fsanitize=leak"]
+      link_flags: ["-fsanitize=leak"]
+      supported_platforms: ["linux", "macos"]
+
+  # Code coverage
+  coverage:
+    flags: ["-fprofile-instr-generate", "-fcoverage-mapping"]
+    link_flags: ["-fprofile-instr-generate"]
+
+  # Link-time optimization
+  lto:
+    thin:
+      compile_flags: ["-flto=thin"]
+      link_flags: ["-flto=thin"]
+    full:
+      compile_flags: ["-flto"]
+      link_flags: ["-flto"]
+
+# CMake integration
+cmake:
+  variables:
+    CMAKE_C_COMPILER: "{{toolchain_root}}/bin/clang"
+    CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/clang++"
+    CMAKE_AR: "{{toolchain_root}}/bin/llvm-ar"
+    CMAKE_RANLIB: "{{toolchain_root}}/bin/llvm-ranlib"
+    CMAKE_LINKER: "{{toolchain_root}}/bin/ld.lld"
+    LLVM_ROOT: "{{toolchain_root}}"
+  generator_toolset: null
+
+# Platform-specific overrides
+platform_overrides:
+  # Windows uses clang-cl (MSVC-compatible driver)
+  windows:
+    executables:
+      c: "clang-cl.exe"
+      cxx: "clang-cl.exe"
+      ar: "llvm-lib.exe"
+      ranlib: ""
+    flags:
+      debug:
+        - "/MDd"
+        - "/Zi"
+        - "/Od"
+      release:
+        - "/MD"
+        - "/O2"
+        - "/DNDEBUG"
+      relwithdebinfo:
+        - "/MD"
+        - "/Zi"
+        - "/O2"
+        - "/DNDEBUG"
+      minsizerel:
+        - "/MD"
+        - "/O1"
+        - "/DNDEBUG"
+    stdlib:
+      msvc:
+        compile_flags: []
+        defines: []
+        link_flags: []
+        required_version: null
+    linker:
+      link:
+        flag: "/link"
+        supported_platforms: ["windows"]
+    cmake:
+      variables:
+        CMAKE_C_COMPILER: "{{toolchain_root}}/bin/clang-cl.exe"
+        CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/clang-cl.exe"
+        CMAKE_AR: "{{toolchain_root}}/bin/llvm-lib.exe"
+        CMAKE_RANLIB: ""
+        CMAKE_LINKER: "{{toolchain_root}}/bin/lld-link.exe"
+        LLVM_ROOT: "{{toolchain_root}}"
+
+  # macOS defaults to libc++
+  macos:
+    default_stdlib: "libc++"

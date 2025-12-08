@@ -1,0 +1,72 @@
+name: pie
+type: security
+description: Position Independent Executable - ASLR support
+security_type: pie
+
+# Flags applied
+flags:
+  compile:
+    - "-fPIE"
+  link:
+    - "-pie"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true  # Similar to /DYNAMICBASE
+  windows-arm64: true
+  macos-x64: true  # Default on macOS
+  macos-arm64: true
+
+# Performance impact
+performance_impact: minimal  # <1% overhead on x86-64, negligible on ARM
+
+# Security characteristics
+characteristics:
+  protection_type: Address Space Layout Randomization (ASLR)
+  randomization_scope: all segments including .text
+  recommended_for: all modern builds
+  default_in: Ubuntu 17.10+, Fedora 23+, macOS 10.7+
+
+# Conflicts
+conflicts:
+  - type: static_linking
+    reason: PIE conflicts with static linking on some platforms
+
+# Trade-offs
+tradeoffs:
+  pros:
+    - Enables full ASLR protection
+    - Makes exploitation significantly harder
+    - Industry standard for modern software
+  cons:
+    - Minimal performance overhead on x86-64 (register pressure)
+    - May conflict with some legacy code
+    - Slightly larger binary size
+
+# Usage notes
+notes: |
+  PIE (Position Independent Executable) enables full Address Space Layout
+  Randomization (ASLR) for the executable.
+
+  How it works:
+  - Executable is compiled as position-independent code
+  - Loader can place executable at random address
+  - Combined with ASLR, all memory regions are randomized
+  - Makes memory corruption exploits much harder
+
+  Security benefits:
+  - Randomizes code location in memory
+  - Makes ROP/JOP attacks harder to construct
+  - Essential component of modern exploit mitigations
+
+  Platform notes:
+  - Default on macOS since 10.7
+  - Default on most Linux distributions since ~2017
+  - Similar to /DYNAMICBASE on Windows
+
+  Performance:
+  - x86-64: <1% overhead due to RIP-relative addressing
+  - ARM64: Negligible overhead (designed for position-independent code)
+  - Recommended for all modern builds

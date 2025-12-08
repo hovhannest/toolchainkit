@@ -1,0 +1,24 @@
+version: "1.0"
+
+project:
+  name: legacy-project
+  version: "1.0.0"
+  description: "Migrated legacy CMake project"
+
+toolchain:
+  name: gcc-13
+  stdlib: libstdc++
+
+build:
+  type: Release
+  dir: build
+
+packages:
+  manager: conan
+  conanfile: conanfile.txt
+
+bootstrap:
+  toolchain: gcc-13
+  build_type: Release
+  build_dir: build
+  package_manager: conan

@@ -1,0 +1,116 @@
+name: Link Validation (Full)
+
+on:
+  schedule:
+    # Run monthly on 1st at 3 AM UTC
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+
+jobs:
+  validate-links-full:
+    name: Validate Links with Hash Checking
+    runs-on: ubuntu-latest
+    timeout-minutes: 180  # 3 hours for full validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-xdist
+
+      - name: Cache validation results and files
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/toolchainkit-link-validation
+          key: link-validation-full-${{ github.run_id }}
+          restore-keys: |
+            link-validation-full-
+            link-validation-
+
+      - name: Run full link validation with hash checking
+        run: |
+          pytest --link-validation \
+                 --validation-level=full \
+                 --validation-cache-dir=$HOME/.cache/toolchainkit-link-validation \
+                 -n 4 \
+                 --tb=short \
+                 -v \
+                 tests/link_validation/
+
+      - name: Upload validation cache
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-cache-full
+          path: ~/.cache/toolchainkit-link-validation/
+          retention-days: 14
+
+      - name: Generate detailed validation report
+        if: always()
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          cache_dir = Path.home() / '.cache' / 'toolchainkit-link-validation'
+          index_file = cache_dir / 'index.json'
+          if index_file.exists():
+              with open(index_file) as f:
+                  data = json.load(f)
+              total = len(data)
+              success = sum(1 for e in data.values() if e.get('is_success'))
+              failed = total - success
+              with_hash = sum(1 for e in data.values() if e.get('hash_valid') is not None)
+              hash_valid = sum(1 for e in data.values() if e.get('hash_valid') == True)
+              print(f'📊 Full Validation Summary:')
+              print(f'  Total URLs: {total}')
+              print(f'  ✅ Successful: {success}')
+              print(f'  ❌ Failed: {failed}')
+              print(f'\n🔐 Hash Validation:')
+              print(f'  URLs with hash: {with_hash}')
+              print(f'  ✅ Valid hashes: {hash_valid}')
+              print(f'  ❌ Invalid hashes: {with_hash - hash_valid}')
+              if failed > 0 or (with_hash - hash_valid) > 0:
+                  print(f'\n⚠️  Issues detected in validation')
+                  print('Check test output for details')
+          else:
+              print('⚠️  No cache index found')
+          "
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔗 Full Link Validation Failed (with Hash Checking)';
+            const body = `
+            Automated full link validation detected broken links or invalid hashes.
+
+            **Workflow:** ${context.workflow}
+            **Run:** ${context.runNumber}
+            **Details:** ${context.payload.repository.html_url}/actions/runs/${context.runId}
+
+            This run includes:
+            - HTTP accessibility checks
+            - File downloads
+            - SHA256 hash verification
+
+            Please review the failed tests and update broken URLs or incorrect hashes in \`toolchainkit/data/toolchains.json\`.
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'automated', 'link-validation', 'hash-mismatch']
+            });

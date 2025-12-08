@@ -1,0 +1,80 @@
+# LLD (LLVM Linker) Layer Configuration
+# Standalone linker layer for use with any compiler
+
+name: "lld"
+display_name: "LLD (LLVM Linker)"
+type: "linker"
+
+# Description
+description: |
+  LLD is the LLVM project's linker. It's fast, cross-platform, and the recommended
+  linker for Clang/LLVM toolchains. Typically 2-3x faster than GNU ld.
+
+# Linker selection flag
+flag: "-fuse-ld=lld"
+
+# Supported platforms
+supported_platforms:
+  - "linux"
+  - "windows"
+  - "macos"
+  - "android"
+
+# Supported compilers
+supported_compilers:
+  - "clang"
+  - "gcc"                         # GCC can use lld on Linux
+
+# Linker-specific flags (optional)
+linker_flags:
+  # Performance flags
+  performance:
+    - "--threads"                 # Enable parallel linking
+
+  # Debug flags
+  debug:
+    - "--verbose"                 # Verbose output
+    - "--print-gc-sections"       # Print garbage-collected sections
+
+  # Optimization flags
+  optimization:
+    - "--gc-sections"             # Remove unused sections
+    - "--icf=all"                 # Identical code folding (aggressive)
+
+# Platform-specific settings
+platform_overrides:
+  windows:
+    executable: "lld-link.exe"    # Windows uses lld-link
+    flag: "/link /lldlink"        # Different invocation on Windows
+
+  macos:
+    executable: "ld64.lld"        # macOS uses ld64-compatible lld
+
+  linux:
+    executable: "ld.lld"          # Linux uses ELF lld
+
+# Performance characteristics
+performance:
+  speed: "fast"                   # 2-3x faster than GNU ld
+  memory_usage: "moderate"        # Higher than GNU ld, lower than gold
+  parallel: true                  # Supports parallel linking
+
+# Feature support
+features:
+  thin_lto: true                  # Supports Thin LTO
+  full_lto: true                  # Supports Full LTO
+  gc_sections: true               # Garbage collection of unused sections
+  icf: true                       # Identical code folding
+  build_id: true                  # Build ID generation
+  compress_debug: true            # Debug section compression
+
+# Usage notes
+notes: |
+  LLD is the recommended linker for LLVM/Clang toolchains. It's significantly
+  faster than traditional linkers and supports all modern features including
+  Link-Time Optimization (LTO).
+
+  Usage:
+    tkgen configure --layers base/clang-18,linker/lld
+
+  This will use LLD instead of the default system linker.

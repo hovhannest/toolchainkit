@@ -1,0 +1,18 @@
+type: optimization
+name: lto-full
+description: "Full LTO - Maximum link-time optimization"
+
+requires:
+  compiler: [clang, gcc]
+
+flags:
+  compile:
+    - "-flto"
+  link:
+    - "-flto"
+
+defines:
+  - "LTO_ENABLED=1"
+
+cmake_variables:
+  CMAKE_INTERPROCEDURAL_OPTIMIZATION: "ON"

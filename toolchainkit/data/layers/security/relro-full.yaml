@@ -1,0 +1,66 @@
+name: relro-full
+type: security
+description: Full RELRO - complete GOT/PLT protection
+security_type: relro
+mode: full
+
+# Flags applied
+flags:
+  link:
+    - "-Wl,-z,relro,-z,now"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: false  # Not applicable to Windows PE format
+  windows-arm64: false
+  macos-x64: false  # macOS uses different security model
+  macos-arm64: false
+
+# Performance impact
+performance_impact: minimal  # Startup time increase <1-2%
+
+# Security characteristics
+characteristics:
+  protection_type: GOT/PLT hardening
+  relocation_time: load time (all relocations resolved at startup)
+  got_protection: complete - GOT is read-only after relocation
+  plt_protection: complete - no lazy binding
+  recommended_for: production builds on Linux
+
+# Conflicts
+conflicts:
+  - type: relro
+    reason: Multiple RELRO modes are mutually exclusive
+
+# Trade-offs
+tradeoffs:
+  pros:
+    - Complete GOT protection against overwrites
+    - Prevents GOT-based exploitation techniques
+    - No runtime relocation vulnerabilities
+  cons:
+    - Slightly longer startup time (all symbols resolved at load)
+    - Larger memory footprint during startup
+    - No lazy symbol resolution
+
+# Usage notes
+notes: |
+  Full RELRO (RELocation Read-Only) provides the highest level of GOT/PLT
+  protection on Linux systems.
+
+  How it works:
+  - All dynamic relocations are resolved at program load time
+  - GOT (Global Offset Table) is marked read-only after relocation
+  - Prevents GOT overwrites that could redirect function calls
+
+  Security benefits:
+  - Protects against GOT overwrite attacks
+  - Makes exploitation significantly harder
+  - Standard in modern Linux distributions
+
+  Performance considerations:
+  - Adds 1-2% to startup time for large programs
+  - No runtime performance impact
+  - Recommended for all production builds unless startup time is critical

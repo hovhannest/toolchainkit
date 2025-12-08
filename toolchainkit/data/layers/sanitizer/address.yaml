@@ -1,0 +1,23 @@
+type: sanitizer
+name: address
+description: "AddressSanitizer - Detect memory errors"
+
+requires:
+  compiler: [clang, gcc]
+
+conflicts_with:
+  sanitizer: [thread, memory]
+
+flags:
+  compile:
+    - "-fsanitize=address"
+    - "-fno-omit-frame-pointer"
+    - "-g"
+  link:
+    - "-fsanitize=address"
+
+defines:
+  - "ASAN_ENABLED=1"
+
+runtime_env:
+  ASAN_OPTIONS: "detect_leaks=1:check_initialization_order=1"

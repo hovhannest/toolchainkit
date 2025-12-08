@@ -1,0 +1,21 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: GCC + libstdc++ + Make + jemalloc (Linux Standard)
+toolchains:
+  gcc-13:
+    type: gcc
+    version: 13.2.0
+    stdlib: libstdc++
+    layers:
+    - type: allocator
+      name: jemalloc
+defaults:
+  toolchain: gcc-13
+  build_type: Release
+  generator: Make
+build:
+  types:
+  - Release
+  parallel_jobs: auto

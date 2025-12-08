@@ -1,0 +1,24 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: MSVC + MSBuild (Release)
+toolchain_cache:
+  location: local
+  path: .toolchainkit
+packages:
+  manager: conan
+  conan_home: .toolchainkit/conan
+toolchains:
+  msvc-latest:
+    type: msvc
+    version: latest
+    stdlib: msvc
+defaults:
+  toolchain: msvc-latest
+  build_type: Release
+  generator: MSBuild
+build:
+  types:
+  - Release
+  parallel_jobs: auto

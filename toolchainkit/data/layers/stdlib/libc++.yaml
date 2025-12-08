@@ -1,0 +1,18 @@
+type: stdlib
+name: libc++
+stdlib: libc++
+description: "LLVM libc++ standard library"
+
+requires:
+  compiler: [clang]
+
+flags:
+  compile:
+    - "-stdlib=libc++"
+  link:
+    - "-stdlib=libc++"
+    - "-lc++"
+    - "-lc++abi"
+
+defines:
+  - "_LIBCPP_VERSION"

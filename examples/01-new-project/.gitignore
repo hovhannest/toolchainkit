@@ -1,0 +1,39 @@
+# Ignore bootstrap scripts
+toolchainkit.yaml
+bootstrap.sh
+bootstrap.bat
+bootstrap.ps1
+
+# Ignore build directory
+build/
+
+# Ignore common build artifacts
+*.exe
+*.obj
+*.o
+*.log
+*.ilk
+*.pdb
+*.dll
+*.lib
+*.so
+*.a
+*.out
+*.app
+*.dSYM/
+
+# Ignore Conan files
+conanbuild.bat
+conanrun.bat
+conanbuildenv-*.bat
+conanrunenv-*.bat
+CMakeUserPresets.json
+CMakePresets.json
+
+.toolchainkit/
+
+# ToolchainKit
+.toolchainkit/
+!.toolchainkit/config/
+bootstrap.sh
+bootstrap.bat

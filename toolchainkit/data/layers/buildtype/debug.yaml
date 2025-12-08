@@ -1,0 +1,18 @@
+type: buildtype
+name: debug
+description: "Debug build with full symbols and no optimizations"
+
+flags:
+  compile:
+    - "-O0"
+    - "-g3"
+    - "-fno-omit-frame-pointer"
+  link:
+    - "-g"
+
+defines:
+  - "_DEBUG=1"
+  - "DEBUG=1"
+
+cmake_variables:
+  CMAKE_BUILD_TYPE: "Debug"

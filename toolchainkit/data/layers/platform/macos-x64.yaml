@@ -1,0 +1,20 @@
+type: platform
+name: macos-x64
+platform: macos-x64
+description: "macOS x86-64 (Intel)"
+
+flags:
+  compile:
+    - "-m64"
+    - "-fPIC"
+  link:
+    - "-m64"
+
+defines:
+  - "MACOS=1"
+  - "PLATFORM_X64=1"
+
+cmake_variables:
+  CMAKE_SYSTEM_NAME: "Darwin"
+  CMAKE_SYSTEM_PROCESSOR: "x86_64"
+  CMAKE_OSX_ARCHITECTURES: "x86_64"

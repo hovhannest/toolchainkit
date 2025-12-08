@@ -1,0 +1,78 @@
+# GNU Gold Linker Layer Configuration
+# Standalone linker layer for use with GCC or Clang
+
+name: "gold"
+display_name: "GNU Gold Linker"
+type: "linker"
+
+# Description
+description: |
+  GNU Gold is an alternative linker developed by Google for the GNU toolchain.
+  It's faster than the traditional GNU ld and supports plugins for LTO.
+  Linux-only.
+
+# Linker selection flag
+flag: "-fuse-ld=gold"
+
+# Supported platforms
+supported_platforms:
+  - "linux"                       # Gold is Linux-only
+
+# Supported compilers
+supported_compilers:
+  - "gcc"                         # Primary use case
+  - "clang"                       # Also works with Clang
+
+# Linker-specific flags (optional)
+linker_flags:
+  # Performance flags
+  performance:
+    - "--threads"                 # Enable parallel linking
+    - "--thread-count=4"          # Number of threads (adjust as needed)
+
+  # Debug flags
+  debug:
+    - "--verbose"                 # Verbose output
+    - "--print-gc-sections"       # Print garbage-collected sections
+
+  # Optimization flags
+  optimization:
+    - "--gc-sections"             # Remove unused sections
+    - "--icf=all"                 # Identical code folding (aggressive)
+
+# Platform-specific settings
+platform_overrides:
+  linux:
+    executable: "ld.gold"         # Gold executable name
+
+# Performance characteristics
+performance:
+  speed: "moderate"               # 1.5-2x faster than GNU ld
+  memory_usage: "moderate"        # Similar to GNU ld
+  parallel: true                  # Supports parallel linking with --threads
+
+# Feature support
+features:
+  thin_lto: false                 # Does not support Thin LTO (LLVM-specific)
+  full_lto: true                  # Supports Full LTO with plugin
+  gc_sections: true               # Garbage collection of unused sections
+  icf: true                       # Identical code folding
+  build_id: true                  # Build ID generation
+  compress_debug: true            # Debug section compression
+  plugins: true                   # Supports linker plugins for LTO
+
+# Usage notes
+notes: |
+  GNU Gold is a good alternative to the default GNU ld linker. It's faster
+  and supports link-time optimization with GCC via plugins.
+
+  Usage:
+    tkgen configure --layers base/gcc-13,linker/gold
+
+  Gold is particularly useful for GCC-based toolchains where lld may not
+  be available or compatible.
+
+  Requirements:
+    - Linux only
+    - binutils-gold package must be installed
+    - For LTO: gcc-plugin-dev package

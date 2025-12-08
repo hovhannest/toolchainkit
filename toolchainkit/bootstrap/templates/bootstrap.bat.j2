@@ -1,0 +1,116 @@
+@echo off
+REM ToolchainKit Bootstrap Script
+REM Generated automatically - do not edit manually
+REM Project: {{ project_name }}
+REM Toolchain: {{ toolchain }}
+
+echo Bootstrapping {{ project_name }}...
+echo.
+
+REM Platform compatibility check
+echo Detected platform: Windows
+set TOOLCHAIN_TYPE={{ toolchain | lower }}
+
+REM GCC compatibility check
+echo %TOOLCHAIN_TYPE% | findstr /C:"gcc" >nul
+if %errorlevel% equ 0 (
+    echo ERROR: GCC is not supported on Windows in toolchainkit
+    echo        Use LLVM/Clang or MSVC toolchain instead
+    echo        MinGW/MinGW-w64 support may be added in future releases
+    exit /b 1
+)
+
+echo.
+
+{% if env_vars %}
+REM Environment Variables
+echo Setting environment variables...
+{% for key, value in env_vars.items() %}
+set {{ key }}={{ value }}
+{% endfor %}
+echo.
+{% endif %}
+
+REM Check Python
+echo Checking Python...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: Python is required but not installed
+    echo        Please install Python 3.8 or later from https://www.python.org/
+    exit /b 1
+)
+
+for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
+echo Python %PYTHON_VERSION% found
+
+REM Check/install ToolchainKit
+echo.
+echo Checking ToolchainKit...
+tkgen --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Installing ToolchainKit...
+    pip install --user toolchainkit
+    if %errorlevel% neq 0 (
+        echo ERROR: Failed to install ToolchainKit
+        exit /b 1
+    )
+) else (
+    for /f "tokens=*" %%i in ('tkgen --version 2^>^&1') do set TKGEN_VERSION=%%i
+    echo ToolchainKit found ^(%TKGEN_VERSION%^)
+)
+
+{% if hooks.pre_configure %}
+REM Run pre_configure hook
+echo.
+echo Running pre_configure hook...
+if exist "{{ hooks.pre_configure }}" (
+    call "{{ hooks.pre_configure }}"
+    if %errorlevel% neq 0 (
+        echo ERROR: pre_configure hook failed
+        exit /b 1
+    )
+) else (
+    echo WARNING: pre_configure hook script not found: {{ hooks.pre_configure }}
+)
+{% endif %}
+
+REM Run ToolchainKit Bootstrap
+echo.
+echo Running ToolchainKit bootstrap...
+tkgen {% if config_file %}--config "{{ config_file }}" {% endif %}configure ^
+    --toolchain "{{ toolchain }}" ^
+    --build-type "{{ build_type }}" ^
+    --build-dir "{{ build_dir }}" ^
+    --bootstrap{% if cmake_args %} ^
+    {% for arg in cmake_args %}--cmake-args "{{ arg }}"{% if not loop.last %} ^
+    {% endif %}{% endfor %}{% endif %}
+
+
+if %errorlevel% neq 0 (
+    echo ERROR: Bootstrap failed
+    exit /b 1
+)
+
+{% if hooks.post_configure %}
+REM Run post_configure hook
+echo.
+echo Running post_configure hook...
+if exist "{{ hooks.post_configure }}" (
+    call "{{ hooks.post_configure }}"
+    if %errorlevel% neq 0 (
+        echo ERROR: post_configure hook failed
+        exit /b 1
+    )
+) else (
+    echo WARNING: post_configure hook script not found: {{ hooks.post_configure }}
+)
+{% endif %}
+
+echo.
+echo Bootstrap complete!
+echo.
+echo To build the project:
+echo   cmake --build {{ build_dir }} --config {{ build_type }}
+echo.
+echo To run tests ^(if available^):
+echo   cd {{ build_dir }} ^&^& ctest -C {{ build_type }}

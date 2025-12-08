@@ -1,0 +1,104 @@
+name: instrument-functions
+type: profiling
+description: Function instrumentation - custom entry/exit hooks
+profiling_type: instrument_functions
+
+# Flags applied
+flags:
+  compile:
+    - "-finstrument-functions"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true
+  windows-arm64: true
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: high  # 30-100% overhead depending on call frequency
+
+# Profiling characteristics
+characteristics:
+  profiling_method: explicit callbacks on function entry/exit
+  output_file: custom (you provide callbacks)
+  granularity: function-level
+  requires_runtime_lib: false
+  data_collection: via user-provided hooks
+
+# Conflicts
+conflicts:
+  - type: profiling
+    reason: Cannot use multiple profiling modes simultaneously
+
+# Instrumentation hooks
+hooks:
+  entry: __cyg_profile_func_enter
+  exit: __cyg_profile_func_exit
+
+# Usage notes
+notes: |
+  Function instrumentation adds callbacks to every function entry and exit,
+  allowing custom profiling and tracing implementations.
+
+  How it works:
+  - Compiler adds calls to __cyg_profile_func_enter at function start
+  - Compiler adds calls to __cyg_profile_func_exit at function end
+  - You provide these functions to collect profiling data
+  - Both functions receive function and call site addresses
+
+  Required callbacks:
+  ```c
+  void __cyg_profile_func_enter(void *this_fn, void *call_site);
+  void __cyg_profile_func_exit(void *this_fn, void *call_site);
+  ```
+
+  Example implementation:
+  ```c
+  #include <stdio.h>
+
+  void __cyg_profile_func_enter(void *this_fn, void *call_site) {
+      fprintf(stderr, "Enter: %p from %p\n", this_fn, call_site);
+  }
+
+  void __cyg_profile_func_exit(void *this_fn, void *call_site) {
+      fprintf(stderr, "Exit: %p from %p\n", this_fn, call_site);
+  }
+  ```
+
+  Use cases:
+  - Custom profilers
+  - Function tracing
+  - Call graph generation
+  - Code coverage tools
+  - Performance analysis tools
+
+  Performance considerations:
+  - Very high overhead (30-100%) for call-heavy code
+  - Overhead depends on callback implementation
+  - Can selectively exclude functions with attributes
+  - Consider using sampling for production profiling
+
+  Excluding functions:
+  ```c
+  __attribute__((no_instrument_function))
+  void critical_function() {
+      // Not instrumented
+  }
+  ```
+
+  Advanced usage:
+  - Combine with backtrace() for full call stacks
+  - Use thread-local storage for thread-safe profiling
+  - Implement timing with clock_gettime()
+  - Generate Chrome tracing JSON format
+  - Build custom visualization tools
+
+  Comparison with gprof:
+  - More flexible (you control data collection)
+  - Higher overhead (every call, not sampling)
+  - Works with multi-threading
+  - Requires custom callback implementation
+  - Better for call graph tracing than timing analysis

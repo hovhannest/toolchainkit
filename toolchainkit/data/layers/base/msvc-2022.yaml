@@ -1,0 +1,15 @@
+type: base
+name: msvc-2022
+compiler: msvc
+version: 19.38
+description: "Microsoft Visual C++ 2022 (MSVC 19.38)"
+
+flags:
+  compile:
+    - "/W4"
+    - "/permissive-"
+    - "/Zc:__cplusplus"
+
+cmake_variables:
+  CMAKE_C_COMPILER: "cl.exe"
+  CMAKE_CXX_COMPILER: "cl.exe"

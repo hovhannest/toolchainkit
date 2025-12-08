@@ -1,0 +1,89 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, dev_hovt, develop ]
+  pull_request:
+    branches: [ main, dev_hovt, develop ]
+
+jobs:
+  lint-and-format:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff mypy types-PyYAML
+
+      - name: Run ruff (linting)
+        run: |
+          ruff check toolchainkit tests --output-format=github
+        continue-on-error: true
+
+      - name: Run ruff (formatting check)
+        run: |
+          ruff format --check toolchainkit tests
+        continue-on-error: true
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mypy types-PyYAML types-requests
+
+      - name: Run mypy
+        run: |
+          mypy toolchainkit --ignore-missing-imports --no-strict-optional
+        continue-on-error: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Run Bandit (security linter)
+        run: |
+          pip install bandit
+          bandit -r toolchainkit -f json -o bandit-report.json || true
+          bandit -r toolchainkit
+        continue-on-error: true
+
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: bandit-report.json
+          retention-days: 30

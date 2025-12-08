@@ -1,0 +1,270 @@
+{
+  "toolchains": {
+    "llvm": {
+      "type": "clang",
+      "description": "LLVM/Clang compiler toolchain",
+      "versions": {
+        "18.1.8": {
+          "linux-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-linux-gnu-ubuntu-18.04.tar.xz",
+            "sha256": "54ec30358afcc9fb8aa74307db3046f5187f9fb89fb37064cdde906e062ebf36",
+            "size_mb": 997,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "linux-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-aarch64-linux-gnu.tar.xz",
+            "sha256": "dcaa1bebbfbb86953fdfbdc7f938800229f75ad26c5c9375ef242edad737d999",
+            "size_mb": 1003,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "windows-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-win64.exe",
+            "sha256": "94af030060d88cc17e9f00ef1663ebdc1126b35e16bebdfa1e807984b70abd8f",
+            "size_mb": 365,
+            "requires_installer": true
+          },
+          "macos-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-arm64-apple-macos11.tar.xz",
+            "sha256": "4573b7f25f46d2a9c8882993f091c52f416c83271db6f5b213c93f0bd0346a10",
+            "size_mb": 800,
+            "stdlib": [
+              "libc++"
+            ]
+          }
+        },
+        "19.1.1": {
+          "linux-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.1/LLVM-19.1.1-Linux-X64.tar.xz",
+            "sha256": "8204de000b6a6921f0572e038336601e3225898e9a253c8aaa43b0a5fae8a4ce",
+            "size_mb": 1578,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "linux-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.1",
+            "sha256": "placeholder_llvm_19.1.1_linux_arm64_manual_install",
+            "size_mb": 0,
+            "manual_install_required": true,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "windows-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.1/LLVM-19.1.1-win64.exe",
+            "sha256": "95f03b6a8a0049e29898b0fadf84a0ea252f2e7f1b36db15a81aae11e912f675",
+            "size_mb": 335,
+            "requires_installer": true
+          },
+          "macos-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.1/LLVM-19.1.1-macOS-ARM64.tar.xz",
+            "sha256": "e00def99a6b32de61fffabd4bb85290589731f3f5cb9836fd51770256cd694dd",
+            "size_mb": 1340,
+            "stdlib": [
+              "libc++"
+            ]
+          }
+        },
+        "20.1.0": {
+          "linux-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-Linux-X64.tar.xz",
+            "sha256": "954ac51498519f6ed9540714fb04bc401f70039b296a8160dd1559be380788d7",
+            "size_mb": 1430,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "linux-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-Linux-ARM64.tar.xz",
+            "sha256": "9d1bbf3f6d4d011e3b8b4b585f686bc968474917f37d3b82b4a534f456168c67",
+            "size_mb": 1776,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "windows-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-win64.exe",
+            "sha256": "64b9ee39d07c1adca999a132b7367fbeaa649f4e829e07d8e8766626235a1aa7",
+            "size_mb": 368,
+            "requires_installer": true
+          },
+          "macos-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-macOS-ARM64.tar.xz",
+            "sha256": "2c42ec26ec50c4bf8b95585f762b9d2f5b385d170dee772d9c1d6c9a7190dcef",
+            "size_mb": 1383,
+            "stdlib": [
+              "libc++"
+            ]
+          }
+        },
+        "21.1.7": {
+          "linux-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.7/LLVM-21.1.7-Linux-X64.tar.xz",
+            "sha256": "621ab8424178ffc28db0facc5aefd3fc11f5dea339aac171b36fa0b8d4b368cb",
+            "size_mb": 232,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "linux-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.7/LLVM-21.1.7-Linux-ARM64.tar.xz",
+            "sha256": "aa85ddc8ba95ac5f2febddb51a6891ee0e57ac058c6455395d5a4bfa5650d44b",
+            "size_mb": 1570,
+            "stdlib": [
+              "libc++",
+              "libstdc++"
+            ]
+          },
+          "windows-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.7/LLVM-21.1.7-win64.exe",
+            "sha256": "0ee11d3a8b9b64236c72c4a931fd40f138155e7df61b9df292fc0210b580945e",
+            "size_mb": 357,
+            "requires_installer": true
+          },
+          "macos-arm64": {
+            "url": "https://github.com/llvm/llvm-project/releases/tag/llvmorg-21.1.7",
+            "sha256": "placeholder_llvm_21.1.7_macos_arm64_manual_install",
+            "size_mb": 0,
+            "manual_install_required": true,
+            "stdlib": [
+              "libc++"
+            ]
+          },
+          "macos-x64": {
+            "url": "https://github.com/llvm/llvm-project/releases/tag/llvmorg-21.1.7",
+            "sha256": "placeholder_llvm_21.1.7_macos_x64_manual_install",
+            "size_mb": 0,
+            "manual_install_required": true,
+            "stdlib": [
+              "libc++"
+            ]
+          }
+        }
+      }
+    },
+    "gcc": {
+      "type": "gcc",
+      "description": "GNU Compiler Collection",
+      "versions": {
+        "15.2.0": {
+          "linux-x64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-15.2.0/gcc-15.2.0.tar.xz",
+            "sha256": "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e",
+            "size_mb": 96,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          },
+          "linux-arm64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-15.2.0/gcc-15.2.0.tar.xz",
+            "sha256": "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e",
+            "size_mb": 96,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          }
+        },
+        "14.3.0": {
+          "linux-x64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-14.3.0/gcc-14.3.0.tar.xz",
+            "sha256": "e0dc77297625631ac8e50fa92fffefe899a4eb702592da5c32ef04e2293aca3a",
+            "size_mb": 91,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          },
+          "linux-arm64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-14.3.0/gcc-14.3.0.tar.xz",
+            "sha256": "e0dc77297625631ac8e50fa92fffefe899a4eb702592da5c32ef04e2293aca3a",
+            "size_mb": 91,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          }
+        },
+        "13.4.0": {
+          "linux-x64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-13.4.0/gcc-13.4.0.tar.xz",
+            "sha256": "9c4ce6dbb040568fdc545588ac03c5cbc95a8dbf0c7aa490170843afb59ca8f5",
+            "size_mb": 84,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          },
+          "linux-arm64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-13.4.0/gcc-13.4.0.tar.xz",
+            "sha256": "9c4ce6dbb040568fdc545588ac03c5cbc95a8dbf0c7aa490170843afb59ca8f5",
+            "size_mb": 84,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          }
+        },
+        "12.5.0": {
+          "linux-x64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-12.5.0/gcc-12.5.0.tar.xz",
+            "sha256": "71cd373d0f04615e66c5b5b14d49c1a4c1a08efa7b30625cd240b11bab4062b3",
+            "size_mb": 82,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          },
+          "linux-arm64": {
+            "url": "https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/releases/gcc-12.5.0/gcc-12.5.0.tar.xz",
+            "sha256": "71cd373d0f04615e66c5b5b14d49c1a4c1a08efa7b30625cd240b11bab4062b3",
+            "size_mb": 82,
+            "stdlib": [
+              "libstdc++"
+            ],
+            "requires_installer": false
+          }
+        }
+      }
+    },
+    "msvc": {
+      "type": "msvc",
+      "description": "Microsoft Visual C++ (requires Visual Studio installation)",
+      "versions": {
+        "2022": {
+          "windows-x64": {
+            "url": "https://aka.ms/vs/17/release/vs_BuildTools.exe",
+            "sha256": "937b31246fc54c0d2b4ffbab6f491a5b83d8d2aa87372d3e862637611f19c557",
+            "size_mb": 4,
+            "requires_installer": true
+          }
+        },
+        "2019": {
+          "windows-x64": {
+            "url": "https://aka.ms/vs/16/release/vs_BuildTools.exe",
+            "sha256": "3e997e087ec2c874323733df0b0a913f33a132ae3b28d9772938cfb990c075b1",
+            "size_mb": 4,
+            "requires_installer": true
+          }
+        }
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2025-11-26",
+    "description": "ToolchainKit toolchain registry database - Single source of truth for all toolchain metadata"
+  }
+}

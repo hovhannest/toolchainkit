@@ -1,0 +1,117 @@
+name: asan-profile
+type: profiling
+description: AddressSanitizer with profiling - memory access profiling
+profiling_type: asan_profile
+
+# Flags applied
+flags:
+  compile:
+    - "-fsanitize-address-use-after-scope"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true
+  windows-arm64: true
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: very high  # 2-3x slowdown (on top of ASan's 2x)
+
+# Profiling characteristics
+characteristics:
+  profiling_method: memory access tracking with sanitizer
+  output_file: stderr (ASan reports)
+  granularity: memory access level
+  requires_runtime_lib: true (ASan runtime)
+  data_collection: automatic
+
+# Requirements
+requirements:
+  - Requires AddressSanitizer layer to be enabled
+  - Cannot be used standalone
+  - Must be combined with -fsanitize=address
+
+# Conflicts
+conflicts:
+  - type: profiling
+    reason: Can be combined with ASan but conflicts with other profiling modes
+  - type: allocator
+    reason: ASan provides its own allocator
+
+# Usage notes
+notes: |
+  ASan profiling enhances AddressSanitizer with additional memory access
+  profiling capabilities, particularly for use-after-scope detection.
+
+  How it works:
+  - Extends ASan to track variable scopes more precisely
+  - Detects use-after-scope bugs (accessing stack variables after scope exit)
+  - Adds instrumentation for stack variable lifetime tracking
+  - Generates reports for scope violations
+
+  Requirements:
+  - Must be used with AddressSanitizer (-fsanitize=address)
+  - This layer ONLY adds -fsanitize-address-use-after-scope
+  - The base ASan layer must be enabled separately
+
+  Example configuration:
+  ```yaml
+  layers:
+    - type: base
+      name: clang-18
+    - type: sanitizer
+      name: address  # AddressSanitizer layer
+    - type: profiling
+      name: asan-profile  # Adds use-after-scope
+  ```
+
+  Features:
+  - Detects use-after-scope bugs
+  - More precise lifetime tracking
+  - Better stack-related error detection
+  - Complements ASan's heap checking
+
+  Performance impact:
+  - ASan baseline: ~2x slowdown
+  - With use-after-scope: ~2-3x slowdown total
+  - Significant memory overhead
+  - Not suitable for production
+
+  Use cases:
+  - Development and testing
+  - Bug hunting (especially stack corruption)
+  - Code review and auditing
+  - CI/CD testing pipelines
+
+  Best practices:
+  - Use in debug/development builds only
+  - Combine with other ASan options (ASAN_OPTIONS)
+  - Run comprehensive test suites
+  - Check for both heap and stack issues
+
+  Environment variables:
+  ```bash
+  # Enable verbose reports
+  export ASAN_OPTIONS=verbosity=1
+
+  # Save report to file
+  export ASAN_OPTIONS=log_path=asan.log
+
+  # Detect stack-use-after-scope
+  export ASAN_OPTIONS=detect_stack_use_after_scope=1
+  ```
+
+  Example output:
+  ```
+  =================================================================
+  ==12345==ERROR: AddressSanitizer: stack-use-after-scope
+  READ of size 4 at 0x7fff12345678 thread T0
+      #0 0x123456 in main example.c:10
+  Address 0x7fff12345678 is located in stack of thread T0 at offset 32
+  This frame has 1 object(s):
+      [32, 36) 'x' (line 8) <== Memory access bellow underlined here
+  =================================================================
+  ```

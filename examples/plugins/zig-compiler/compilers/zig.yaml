@@ -1,0 +1,184 @@
+# Zig Compiler Configuration
+# Example configuration for Zig compiler toolchain
+
+# Compiler identification
+name: "zig"
+display_name: "Zig Compiler"
+type: "zig"
+compiler_family: "zig"
+
+# Version detection
+version_command: ["version"]
+version_regex: "(\\d+\\.\\d+\\.\\d+)"
+
+# Compiler executables (Zig uses wrappers around clang)
+executables:
+  c: "zig cc"
+  cxx: "zig c++"
+  ar: "zig ar"
+  ranlib: "zig ranlib"
+
+# Build type flags
+flags:
+  debug:
+    - "-g"
+    - "-O0"
+    - "-fno-omit-frame-pointer"
+  release:
+    - "-O3"
+    - "-DNDEBUG"
+    - "-fomit-frame-pointer"
+  relwithdebinfo:
+    - "-g"
+    - "-O2"
+    - "-DNDEBUG"
+  minsizerel:
+    - "-Os"
+    - "-DNDEBUG"
+
+# Warning flags
+warning_levels:
+  "off": []
+  basic:
+    - "-Wall"
+    - "-Wextra"
+  extra:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+  strict:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+  pedantic:
+    - "-Wall"
+    - "-Wextra"
+    - "-Wpedantic"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-Wnon-virtual-dtor"
+    - "-Wold-style-cast"
+    - "-Wcast-align"
+    - "-Wunused"
+    - "-Wnull-dereference"
+    - "-Wdouble-promotion"
+  error:
+    - "-Werror"
+
+# Language standards (Zig can compile C/C++ code)
+standards:
+  c:
+    default: "c17"
+    supported: ["c99", "c11", "c17", "c2x"]
+    flag_template: "-std={standard}"
+  cxx:
+    default: "c++20"
+    supported: ["c++11", "c++14", "c++17", "c++20", "c++23"]
+    flag_template: "-std={standard}"
+
+# Standard library configuration
+stdlib:
+  libc++:
+    compile_flags: ["-stdlib=libc++"]
+    defines: []
+    link_flags: ["-lc++", "-lc++abi"]
+    required_version: null
+  libstdc++:
+    compile_flags: ["-stdlib=libstdc++"]
+    defines: []
+    link_flags: []
+    required_version: null
+
+# Linker configuration
+linker:
+  lld:
+    flag: "-fuse-ld=lld"
+    supported_platforms: ["linux", "windows", "macos"]
+
+# Features
+features:
+  # Sanitizers (via LLVM)
+  sanitizers:
+    address:
+      compile_flags: ["-fsanitize=address", "-fno-omit-frame-pointer"]
+      link_flags: ["-fsanitize=address"]
+      supported_platforms: ["linux", "macos", "windows"]
+    undefined:
+      compile_flags: ["-fsanitize=undefined"]
+      link_flags: ["-fsanitize=undefined"]
+      supported_platforms: ["linux", "macos", "windows"]
+    thread:
+      compile_flags: ["-fsanitize=thread"]
+      link_flags: ["-fsanitize=thread"]
+      supported_platforms: ["linux", "macos"]
+    memory:
+      compile_flags: ["-fsanitize=memory"]
+      link_flags: ["-fsanitize=memory"]
+      supported_platforms: ["linux"]
+
+  # Code coverage
+  coverage:
+    flags: ["-fprofile-instr-generate", "-fcoverage-mapping"]
+    link_flags: ["-fprofile-instr-generate"]
+
+  # Link-time optimization
+  lto:
+    thin:
+      compile_flags: ["-flto=thin"]
+      link_flags: ["-flto=thin"]
+    full:
+      compile_flags: ["-flto"]
+      link_flags: ["-flto"]
+
+# CMake integration
+cmake:
+  variables:
+    CMAKE_C_COMPILER: "{{toolchain_root}}/zig"
+    CMAKE_CXX_COMPILER: "{{toolchain_root}}/zig"
+    CMAKE_C_COMPILER_ARG1: "cc"
+    CMAKE_CXX_COMPILER_ARG1: "c++"
+    CMAKE_AR: "{{toolchain_root}}/zig"
+    CMAKE_AR_ARG1: "ar"
+    CMAKE_RANLIB: "{{toolchain_root}}/zig"
+    CMAKE_RANLIB_ARG1: "ranlib"
+    ZIG_ROOT: "{{toolchain_root}}"
+  generator_toolset: null
+
+# Platform-specific overrides
+platform_overrides:
+  # Windows uses .exe extensions
+  windows:
+    cmake:
+      variables:
+        CMAKE_C_COMPILER: "{{toolchain_root}}/zig.exe"
+        CMAKE_CXX_COMPILER: "{{toolchain_root}}/zig.exe"
+        CMAKE_C_COMPILER_ARG1: "cc"
+        CMAKE_CXX_COMPILER_ARG1: "c++"
+        CMAKE_AR: "{{toolchain_root}}/zig.exe"
+        CMAKE_AR_ARG1: "ar"
+        CMAKE_RANLIB: "{{toolchain_root}}/zig.exe"
+        CMAKE_RANLIB_ARG1: "ranlib"
+        ZIG_ROOT: "{{toolchain_root}}"
+
+# Cross-compilation targets (Zig's killer feature)
+cross_compilation:
+  # Example targets - Zig supports many more
+  targets:
+    linux-x64:
+      flag: "-target x86_64-linux-gnu"
+    linux-arm64:
+      flag: "-target aarch64-linux-gnu"
+    windows-x64:
+      flag: "-target x86_64-windows-gnu"
+    macos-x64:
+      flag: "-target x86_64-macos"
+    macos-arm64:
+      flag: "-target aarch64-macos"

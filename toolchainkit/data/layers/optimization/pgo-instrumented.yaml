@@ -1,0 +1,18 @@
+type: optimization
+name: pgo-instrumented
+description: "PGO instrumentation phase"
+
+requires:
+  compiler: [clang, gcc]
+
+flags:
+  compile:
+    - "-fprofile-generate={{pgo_dir}}"
+  link:
+    - "-fprofile-generate={{pgo_dir}}"
+
+defines:
+  - "PGO_INSTRUMENTED=1"
+
+runtime_env:
+  LLVM_PROFILE_FILE: "{{pgo_dir}}/code-%p.profraw"

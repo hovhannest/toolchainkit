@@ -1,0 +1,18 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: LLVM + MinSizeRel
+toolchains:
+  llvm-18:
+    type: llvm
+    version: 18.1.8
+    stdlib: libc++
+defaults:
+  toolchain: llvm-18
+  build_type: MinSizeRel
+  generator: Ninja
+build:
+  types:
+  - MinSizeRel
+  parallel_jobs: auto

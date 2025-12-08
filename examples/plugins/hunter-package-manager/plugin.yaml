@@ -1,0 +1,28 @@
+name: "hunter-package-manager"
+version: "1.0.0"
+type: "package_manager"
+description: "Hunter C++ package manager integration for ToolchainKit"
+author: "ToolchainKit Community"
+homepage: "https://github.com/toolchainkit/tk-hunter"
+license: "MIT"
+entry_point: "hunter_plugin.HunterPlugin"
+
+min_toolchainkit_version: "1.0.0"
+
+platforms:
+  - "linux-x64"
+  - "linux-arm64"
+  - "windows-x64"
+  - "macos-x64"
+  - "macos-arm64"
+
+tags:
+  - "package-manager"
+  - "hunter"
+  - "cmake"
+  - "c++"
+  - "dependencies"
+
+permissions:
+  - "filesystem.read"
+  - "filesystem.write"

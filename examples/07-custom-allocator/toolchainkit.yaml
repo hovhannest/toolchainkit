@@ -1,0 +1,50 @@
+project:
+  name: allocator-demo
+  version: 1.0.0
+  description: "Demonstration of custom allocator integration with ToolchainKit"
+
+toolchain:
+  compiler: gcc
+  version: "11"
+  standard: c++17
+
+package_manager:
+  type: conan
+  lockfile: true
+
+build:
+  type: Release
+  generator: Ninja
+
+allocator:
+  # Default allocator for the project
+  default: mimalloc
+
+  # Available allocator options
+  options:
+    - mimalloc
+    - jemalloc
+    - tcmalloc
+    - system
+
+  # Allocator-specific configuration
+  mimalloc:
+    version: "2.1.2"
+    options:
+      secure: false
+
+  jemalloc:
+    version: "5.3.0"
+
+  tcmalloc:
+    package: gperftools
+    version: "2.10"
+
+# Optional: Platform-specific allocator preferences
+platforms:
+  linux:
+    allocator: mimalloc
+  windows:
+    allocator: mimalloc
+  macos:
+    allocator: system  # mimalloc also works well on macOS

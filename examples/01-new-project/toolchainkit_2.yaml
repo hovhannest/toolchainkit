@@ -1,0 +1,18 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: GCC + Make (Release)
+toolchains:
+  gcc-13:
+    type: gcc
+    version: 13.2.0
+    stdlib: libstdc++
+defaults:
+  toolchain: gcc-13
+  build_type: Release
+  generator: Make
+build:
+  types:
+  - Release
+  parallel_jobs: auto

@@ -1,0 +1,19 @@
+type: optimization
+name: lto-thin
+description: "Thin LTO - Fast link-time optimization"
+
+requires:
+  compiler: [clang, gcc]
+
+flags:
+  compile:
+    - "-flto=thin"
+  link:
+    - "-flto=thin"
+    - "-fuse-ld=lld"
+
+defines:
+  - "LTO_ENABLED=1"
+
+cmake_variables:
+  CMAKE_INTERPROCEDURAL_OPTIMIZATION: "ON"

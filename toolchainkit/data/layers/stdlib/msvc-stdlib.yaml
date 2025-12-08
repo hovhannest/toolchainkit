@@ -1,0 +1,11 @@
+type: stdlib
+name: msvc-stdlib
+stdlib: msvc
+description: "Microsoft Visual C++ standard library"
+
+requires:
+  compiler: [msvc]
+
+flags:
+  compile:
+    - "/EHsc"

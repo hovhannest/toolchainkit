@@ -1,0 +1,4 @@
+
+  types:
+  - Release
+  parallel_jobs: auto

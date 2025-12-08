@@ -1,0 +1,25 @@
+version: 1
+
+project:
+  name: multi-toolchain-project
+  language: cpp
+
+toolchains:
+  - name: llvm-18
+    type: llvm
+    version: "18.1.8"
+
+  - name: llvm-17
+    type: llvm
+    version: "17.0.6"
+
+  - name: gcc-13
+    type: gcc
+    version: "13.2.0"
+
+build:
+  generator: Ninja
+  configurations:
+    - Debug
+    - Release
+    - RelWithDebInfo

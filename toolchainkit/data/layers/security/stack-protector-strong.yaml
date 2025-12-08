@@ -1,0 +1,43 @@
+name: stack-protector-strong
+type: security
+description: Stack buffer overflow protection (strong mode) - recommended for production
+security_type: stack_protector
+level: strong
+
+# Flags applied
+flags:
+  compile:
+    - "-fstack-protector-strong"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true
+  windows-arm64: true
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: minimal  # <5% overhead
+
+# Security characteristics
+characteristics:
+  protection_scope: functions with buffers larger than 8 bytes, or arrays, or address taken
+  false_positive_rate: very low
+  recommended_for: production builds
+  compatibility: high - supported by GCC 4.9+ and Clang 3.5+
+
+# Conflicts
+conflicts:
+  - type: stack_protector
+    reason: Multiple stack protector levels are mutually exclusive
+
+# Usage notes
+notes: |
+  Stack protector strong is the recommended level for production builds.
+  It provides good protection with minimal performance overhead.
+  Protects functions with:
+  - Arrays of any type/size
+  - Buffers larger than 8 bytes
+  - Functions with address-of-local taken

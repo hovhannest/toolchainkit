@@ -1,0 +1,79 @@
+# TBB Scalable Allocator Layer
+# Intel Threading Building Blocks memory allocator
+
+type: allocator
+name: tbbmalloc
+display_name: "TBB Scalable Allocator"
+description: "Intel TBB scalable memory allocator"
+homepage: "https://github.com/oneapi-src/oneTBB"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: low
+  overhead: low
+  profiling: false
+  best_for: "Intel TBB users, NUMA awareness, scalability"
+
+# Integration methods
+integration_methods:
+  - link
+  - ld_preload
+
+# Link-time integration
+link:
+  flags: ["-ltbbmalloc"]
+  required_packages:
+    apt: ["libtbb-dev"]
+    brew: ["tbb"]
+    pacman: ["intel-tbb"]
+    dnf: ["tbb-devel"]
+
+# LD_PRELOAD integration
+ld_preload:
+  library_paths:
+    linux: "/usr/lib/x86_64-linux-gnu/libtbbmalloc.so.2"
+    macos: "/usr/local/lib/libtbbmalloc.dylib"
+  env_vars:
+    TBB_MALLOC_USE_HUGE_PAGES: "1"
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib/x86_64-linux-gnu"
+      - "/usr/lib/aarch64-linux-gnu"
+      - "/usr/local/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/lib"
+      - "/opt/homebrew/lib"
+  windows:
+    supported: true
+    default_method: link
+    library_name: "tbbmalloc.lib"
+
+# Configuration options
+options:
+  huge_pages:
+    description: "Use transparent huge pages"
+    default: true
+    env_var: "TBB_MALLOC_USE_HUGE_PAGES"
+    value: "1"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~5-10% compared to system malloc"
+  gains: "10-30% improvement in TBB applications"
+  memory: "NUMA-aware, excellent scalability"
+  note: "Natural choice for applications already using Intel TBB"

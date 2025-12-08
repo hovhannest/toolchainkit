@@ -1,0 +1,68 @@
+# snmalloc (Microsoft Research) Memory Allocator Layer
+# Concurrent allocator with message passing design
+
+type: allocator
+name: snmalloc
+display_name: "snmalloc (Microsoft Research)"
+description: "Message-passing based concurrent allocator"
+homepage: "https://github.com/microsoft/snmalloc"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: low
+  overhead: low
+  profiling: false
+  best_for: "Concurrent allocation, cache efficiency, NUMA systems"
+
+# Integration methods
+integration_methods:
+  - link
+  - header_only
+
+# Link-time integration
+link:
+  flags: ["-lsnmalloc"]
+  required_packages:
+    apt: ["libsnmalloc-dev"]
+    brew: ["snmalloc"]
+
+# Header-only option
+header_only:
+  available: true
+  include_dirs:
+    - "/usr/local/include/snmalloc"
+    - "/opt/homebrew/include/snmalloc"
+  notes: "Can be used as header-only library with CMake"
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib/x86_64-linux-gnu"
+      - "/usr/local/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/lib"
+      - "/opt/homebrew/lib"
+  windows:
+    supported: true
+    default_method: link
+    library_name: "snmalloc.lib"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~3-8% compared to system malloc"
+  gains: "10-25% improvement in concurrent workloads"
+  memory: "Excellent cache efficiency, NUMA-aware"
+  scaling: "Superior scalability on high-core-count systems"

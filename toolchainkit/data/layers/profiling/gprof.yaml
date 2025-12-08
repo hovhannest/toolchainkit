@@ -1,0 +1,89 @@
+name: gprof
+type: profiling
+description: GNU profiler - function call profiling with gmon.out
+profiling_type: gprof
+
+# Flags applied
+flags:
+  compile:
+    - "-pg"
+  link:
+    - "-pg"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: partial  # MinGW only
+  windows-arm64: false
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: moderate  # 10-30% overhead
+
+# Profiling characteristics
+characteristics:
+  profiling_method: function call graph and timing
+  output_file: gmon.out
+  granularity: function-level
+  requires_runtime_lib: true
+  data_collection: automatic at program exit
+
+# Conflicts
+conflicts:
+  - type: profiling
+    reason: Cannot use multiple profiling modes simultaneously
+  - type: optimization
+    levels: [o3, ofast]
+    reason: Aggressive inlining may distort profiling results
+
+# Output format
+output:
+  default_file: gmon.out
+  analysis_tool: gprof
+  visualization: kprof, gprof2dot
+
+# Usage notes
+notes: |
+  gprof is the traditional GNU profiler for function-level performance analysis.
+
+  How it works:
+  - Compiler instruments function entry/exit with -pg
+  - Runtime library collects call graph and timing data
+  - Generates gmon.out file when program exits normally
+  - Use 'gprof program gmon.out' to analyze results
+
+  Features:
+  - Function call counts
+  - Time spent in each function
+  - Call graph (who calls whom)
+  - Flat profile (self time)
+  - Call graph profile (cumulative time)
+
+  Limitations:
+  - Cannot profile multi-threaded programs accurately
+  - Sampling based (may miss short functions)
+  - Requires normal program exit for output
+  - Moderate performance overhead (10-30%)
+
+  Best practices:
+  - Use with -O2 optimization for realistic results
+  - Avoid -O3/-Ofast (inlining distorts call graph)
+  - Run representative workload
+  - Profile in release-like environment
+
+  Analysis:
+  ```bash
+  # Compile with gprof
+  gcc -pg -O2 program.c -o program
+
+  # Run program (generates gmon.out)
+  ./program
+
+  # Analyze results
+  gprof program gmon.out > analysis.txt
+
+  # Generate call graph visualization
+  gprof program gmon.out | gprof2dot | dot -Tpng -o callgraph.png
+  ```

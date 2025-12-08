@@ -1,0 +1,92 @@
+name: hardened
+type: security
+description: Composite hardened security profile - recommended security baseline
+security_type: hardened
+
+# Flags applied (composite layer)
+flags:
+  compile:
+    - "-fstack-protector-strong"
+    - "-D_FORTIFY_SOURCE=2"
+    - "-fPIE"
+  link:
+    - "-Wl,-z,relro,-z,now"
+    - "-pie"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: partial  # Stack protector, fortify, PIE supported; RELRO not applicable
+  windows-arm64: partial
+  macos-x64: partial  # Stack protector, fortify, PIE supported; RELRO not applicable
+  macos-arm64: partial
+
+# Performance impact
+performance_impact: low  # <5% overhead total
+
+# Security characteristics
+characteristics:
+  protection_scope: comprehensive baseline security
+  features:
+    - Stack overflow protection (strong)
+    - Buffer overflow detection (fortify level 2)
+    - GOT/PLT protection (full RELRO)
+    - ASLR support (PIE)
+  recommended_for: all production builds
+  compliance: meets most security frameworks (OWASP, CWE Top 25)
+
+# Components included
+components:
+  stack_protector: strong
+  fortify_source: "2"
+  relro: full
+  pie: enabled
+
+# Conflicts
+conflicts:
+  - type: stack_protector
+    reason: Hardened includes stack-protector-strong
+  - type: fortify
+    reason: Hardened includes fortify level 2
+  - type: relro
+    reason: Hardened includes full RELRO
+  - type: pie
+    reason: Hardened includes PIE
+
+# Usage notes
+notes: |
+  The hardened security profile combines multiple security features into a
+  comprehensive baseline for production builds.
+
+  Included features:
+  1. Stack Protector Strong (-fstack-protector-strong)
+     - Protects functions with arrays/buffers
+     - Minimal performance impact (<5%)
+
+  2. Fortify Source Level 2 (-D_FORTIFY_SOURCE=2)
+     - Runtime buffer overflow checks
+     - Requires optimization (-O2 added automatically)
+
+  3. Full RELRO (-Wl,-z,relro,-z,now)
+     - GOT/PLT protection (Linux only)
+     - All relocations at load time
+
+  4. PIE (-fPIE -pie)
+     - Full ASLR support
+     - Randomizes code location
+
+  Performance impact:
+  - Combined overhead: <5% typical
+  - Startup time: +1-2% (due to RELRO)
+  - Runtime: <3% (stack protector + minimal PIE overhead)
+
+  Recommended for:
+  - All production builds
+  - Security-conscious development
+  - Compliance requirements (OWASP, CIS, etc.)
+
+  Platform notes:
+  - Full support on Linux
+  - Partial support on Windows/macOS (RELRO not applicable)
+  - Can be used as baseline and augmented with additional security layers

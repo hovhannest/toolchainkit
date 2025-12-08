@@ -1,0 +1,20 @@
+type: sanitizer
+name: undefined
+description: "UndefinedBehaviorSanitizer - Detect undefined behavior"
+
+requires:
+  compiler: [clang, gcc]
+
+flags:
+  compile:
+    - "-fsanitize=undefined"
+    - "-fno-omit-frame-pointer"
+    - "-g"
+  link:
+    - "-fsanitize=undefined"
+
+defines:
+  - "UBSAN_ENABLED=1"
+
+runtime_env:
+  UBSAN_OPTIONS: "print_stacktrace=1"

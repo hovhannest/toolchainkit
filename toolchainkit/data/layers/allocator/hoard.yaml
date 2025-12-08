@@ -1,0 +1,64 @@
+# Hoard Memory Allocator Layer
+# Prevents false sharing in multi-threaded applications
+
+type: allocator
+name: hoard
+display_name: "Hoard"
+description: "Scalable allocator that prevents false sharing"
+homepage: "https://github.com/emeryberger/Hoard"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: medium
+  overhead: medium
+  profiling: false
+  best_for: "Preventing false sharing, cache coherency"
+
+# Integration methods
+integration_methods:
+  - link
+  - ld_preload
+
+# Link-time integration
+link:
+  flags: ["-lhoard"]
+  required_packages:
+    apt: ["libhoard-dev"]
+
+# LD_PRELOAD integration
+ld_preload:
+  library_paths:
+    linux: "/usr/lib/libhoard.so"
+    macos: "/usr/local/lib/libhoard.dylib"
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib"
+      - "/usr/local/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/lib"
+  windows:
+    supported: true
+    default_method: link
+    library_name: "libhoard.lib"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~10-15% compared to system malloc"
+  gains: "15-30% in applications with false sharing issues"
+  memory: "Moderate fragmentation"
+  note: "Best used when false sharing is a known bottleneck"

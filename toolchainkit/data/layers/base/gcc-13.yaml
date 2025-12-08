@@ -1,0 +1,21 @@
+type: base
+name: gcc-13
+compiler: gcc
+version: 13.2.0
+description: "GNU GCC 13.2.0 - Latest stable with C++23 support"
+
+flags:
+  common:
+    - "-fdiagnostics-color=always"
+    - "-pthread"
+  compile:
+    - "-Wall"
+    - "-Wextra"
+  link:
+    - "-fuse-ld=gold"
+
+cmake_variables:
+  CMAKE_C_COMPILER: "{{toolchain_root}}/bin/gcc"
+  CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/g++"
+  CMAKE_AR: "{{toolchain_root}}/bin/gcc-ar"
+  CMAKE_RANLIB: "{{toolchain_root}}/bin/gcc-ranlib"

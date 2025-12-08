@@ -1,0 +1,87 @@
+# jemalloc Memory Allocator Layer
+# High-performance allocator with low fragmentation and excellent multi-threading
+
+type: allocator
+name: jemalloc
+display_name: "jemalloc"
+description: "High-performance memory allocator with low fragmentation"
+homepage: "https://jemalloc.net/"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: low
+  overhead: low
+  profiling: true
+  best_for: "Multi-threaded applications, reduced fragmentation"
+
+# Integration method preference order
+integration_methods:
+  - link        # Preferred: Link at compile time
+  - ld_preload  # Alternative: Runtime replacement
+  - proxy       # Last resort: Proxy library
+
+# Link-time integration
+link:
+  flags: ["-ljemalloc"]
+  required_packages:
+    apt: ["libjemalloc-dev"]
+    brew: ["jemalloc"]
+    pacman: ["jemalloc"]
+    dnf: ["jemalloc-devel"]
+
+# LD_PRELOAD integration
+ld_preload:
+  library_paths:
+    linux: "/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
+    macos: "/usr/local/opt/jemalloc/lib/libjemalloc.2.dylib"
+  env_vars:
+    MALLOC_CONF: "background_thread:true,metadata_thp:auto"
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib/x86_64-linux-gnu"
+      - "/usr/lib/aarch64-linux-gnu"
+      - "/usr/local/lib"
+      - "/usr/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/opt/jemalloc/lib"
+      - "/opt/homebrew/lib"
+      - "/usr/local/lib"
+  windows:
+    supported: true
+    default_method: link
+    library_name: "jemalloc.lib"
+    notes: "LD_PRELOAD not available on Windows, use link method only"
+
+# Configuration options
+options:
+  background_threads:
+    description: "Use background threads for purging"
+    default: true
+    env_var: "MALLOC_CONF"
+    value: "background_thread:true"
+  metadata_thp:
+    description: "Transparent huge page mode for metadata"
+    default: "auto"
+    env_var: "MALLOC_CONF"
+    value: "metadata_thp:auto"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~5-10% compared to system malloc"
+  gains: "10-30% improvement in multi-threaded applications"
+  memory: "Lower fragmentation, better memory utilization"

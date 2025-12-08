@@ -1,0 +1,78 @@
+# tcmalloc (Google) Memory Allocator Layer
+# Google's high-performance allocator with profiling integration
+
+type: allocator
+name: tcmalloc
+display_name: "TCMalloc (Google)"
+description: "Google's thread-caching malloc with profiling support"
+homepage: "https://github.com/google/tcmalloc"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: low
+  overhead: low
+  profiling: true
+  best_for: "Multi-threaded performance, profiling integration"
+
+# Integration methods
+integration_methods:
+  - link
+  - ld_preload
+  - proxy
+
+# Link-time integration
+link:
+  flags: ["-ltcmalloc"]
+  required_packages:
+    apt: ["libgoogle-perftools-dev", "google-perftools"]
+    brew: ["gperftools"]
+    pacman: ["gperftools"]
+    dnf: ["gperftools-devel"]
+
+# LD_PRELOAD integration
+ld_preload:
+  library_paths:
+    linux: "/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4"
+    macos: "/usr/local/lib/libtcmalloc.dylib"
+  env_vars:
+    TCMALLOC_SAMPLE_PARAMETER: "524288"  # Sample every 512KB
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib/x86_64-linux-gnu"
+      - "/usr/lib/aarch64-linux-gnu"
+      - "/usr/local/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/lib"
+      - "/opt/homebrew/lib"
+  windows:
+    supported: false
+    notes: "TCMalloc has limited Windows support, use mimalloc instead"
+
+# Configuration options
+options:
+  sampling:
+    description: "Memory sampling for profiling (bytes per sample)"
+    default: 524288
+    env_var: "TCMALLOC_SAMPLE_PARAMETER"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~5-10% compared to system malloc"
+  gains: "10-25% improvement in multi-threaded applications"
+  memory: "Excellent thread-local caching, low contention"
+  profiling: "Built-in heap profiler and leak checker"

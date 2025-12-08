@@ -1,0 +1,59 @@
+# nedmalloc Memory Allocator Layer
+# Replacement malloc for Windows with better performance
+
+type: allocator
+name: nedmalloc
+display_name: "nedmalloc"
+description: "Alternative malloc replacement (header-only)"
+homepage: "http://www.nedprod.com/programs/portable/nedmalloc/"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: low
+  overhead: low
+  profiling: false
+  best_for: "Windows performance, header-only library"
+
+# Integration methods
+integration_methods:
+  - header_only
+  - link
+
+# Header-only option
+header_only:
+  available: true
+  include_dirs:
+    - "/usr/local/include/nedmalloc"
+  notes: "Primarily used as header-only library"
+
+# Link-time integration
+link:
+  flags: ["-lnedmalloc"]
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: header_only
+    notes: "Better alternatives available on Linux (jemalloc, tcmalloc)"
+  macos:
+    supported: true
+    default_method: header_only
+  windows:
+    supported: true
+    default_method: header_only
+    notes: "Best used on Windows where system malloc is slower"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~5-10% compared to system malloc"
+  gains: "20-40% improvement on Windows"
+  memory: "Good fragmentation characteristics"
+  note: "Most beneficial on Windows; use jemalloc/tcmalloc on Linux"

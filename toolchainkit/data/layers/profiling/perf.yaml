@@ -1,0 +1,142 @@
+name: perf
+type: profiling
+description: Linux perf profiling - CPU performance counter profiling
+profiling_type: perf
+
+# Flags applied
+flags:
+  compile:
+    - "-fno-omit-frame-pointer"
+    - "-g"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: false
+  windows-arm64: false
+  macos-x64: false  # Use Instruments instead
+  macos-arm64: false
+
+# Performance impact
+performance_impact: minimal  # <5% with frame pointers, negligible with dwarf
+
+# Profiling characteristics
+characteristics:
+  profiling_method: sampling-based CPU profiling
+  output_file: perf.data
+  granularity: instruction/function/source line
+  requires_runtime_lib: false
+  data_collection: via perf command
+
+# Conflicts
+conflicts:
+  - type: optimization
+    levels: [omit-frame-pointer]
+    reason: Frame pointers needed for accurate stack traces
+
+# Usage notes
+notes: |
+  Perf profiling optimizes binaries for use with Linux perf tools, providing
+  low-overhead CPU performance profiling and analysis.
+
+  How it works:
+  - Compiler preserves frame pointers (-fno-omit-frame-pointer)
+  - Adds debug information for symbol resolution (-g)
+  - Linux perf tool samples CPU performance counters
+  - Provides detailed performance insights with minimal overhead
+
+  Compiler flags explained:
+  - -fno-omit-frame-pointer: Keeps frame pointers for stack walking
+  - -g: Adds debug symbols for better reporting
+
+  Basic usage:
+  ```bash
+  # Compile with perf profiling
+  gcc -fno-omit-frame-pointer -g -O2 program.c -o program
+
+  # Record profiling data
+  perf record -g ./program
+
+  # View report
+  perf report
+
+  # Generate flame graph
+  perf script | stackcollapse-perf.pl | flamegraph.pl > flame.svg
+  ```
+
+  Features:
+  - CPU cycle profiling
+  - Hardware performance counter access
+  - Sampling-based (low overhead)
+  - Stack trace capture
+  - Multi-threaded support
+  - Kernel-level profiling
+  - Cache miss analysis
+  - Branch prediction analysis
+
+  Performance impact:
+  - Frame pointers: ~5% overhead on x86-64 (one less register)
+  - Frame pointers: ~1% overhead on ARM64 (many registers)
+  - Debug symbols: no runtime overhead (only binary size)
+  - Sampling overhead: <1% (configurable)
+
+  Advanced usage:
+  ```bash
+  # Record with call graph
+  perf record -g -F 99 ./program
+
+  # Record specific events
+  perf record -e cycles,cache-misses ./program
+
+  # Record with higher frequency
+  perf record -F 999 ./program
+
+  # Profile specific CPU
+  perf record -C 0 ./program
+
+  # Generate annotations
+  perf annotate
+
+  # Top functions
+  perf top
+  ```
+
+  Analysis tools:
+  - perf report: Interactive report viewer
+  - perf annotate: Source-level annotations
+  - perf top: Real-time top functions
+  - FlameGraph: Visualization
+  - hotspot: Qt-based GUI
+
+  Comparison with gprof:
+  - Much lower overhead (<5% vs 10-30%)
+  - Sampling-based (may miss short functions)
+  - Requires Linux perf tool
+  - Better for production profiling
+  - Supports multi-threading
+  - Hardware counter access
+
+  Best practices:
+  - Always use -g for symbol resolution
+  - Keep -fno-omit-frame-pointer for accurate stacks
+  - Use representative workload
+  - Profile in release-like environment (-O2)
+  - Consider DWARF-based unwinding if frame pointer overhead is issue
+
+  System requirements:
+  - Linux kernel 2.6.31+
+  - perf tool installed (linux-tools package)
+  - Permission to access performance counters
+  - May require: sysctl kernel.perf_event_paranoid=-1
+
+  Flame graphs:
+  ```bash
+  # Install flame graph scripts
+  git clone https://github.com/brendangregg/FlameGraph
+
+  # Generate flame graph
+  perf record -g ./program
+  perf script | ./FlameGraph/stackcollapse-perf.pl | \\
+      ./FlameGraph/flamegraph.pl > flame.svg
+  ```

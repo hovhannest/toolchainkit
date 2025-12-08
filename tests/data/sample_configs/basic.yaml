@@ -1,0 +1,16 @@
+version: 1
+
+project:
+  name: test-project
+  language: cpp
+
+toolchains:
+  - name: llvm-18
+    type: llvm
+    version: "18.1.8"
+
+build:
+  generator: Ninja
+  configurations:
+    - Debug
+    - Release

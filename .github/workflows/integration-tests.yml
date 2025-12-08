@@ -1,0 +1,70 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [ main, dev_hovt, develop ]
+  push:
+    branches: [ main, dev_hovt ]
+
+jobs:
+  integration-tests:
+    name: Integration Tests - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.27.x'
+
+      - name: Install Ninja (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install ninja
+
+      - name: Install Ninja (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install ninja
+        shell: cmd
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock pyyaml
+        shell: bash
+
+      - name: Run integration tests
+        run: |
+          pytest -m integration -v --tb=short
+        shell: bash
+        env:
+          TOOLCHAINKIT_TEST_CACHE: ${{ runner.temp }}/tk-cache
+
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs-${{ matrix.os }}
+          path: |
+            tests/logs/
+            tests/artifacts/
+          retention-days: 7

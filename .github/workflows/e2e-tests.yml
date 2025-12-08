@@ -1,0 +1,134 @@
+name: End-to-End Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, dev_hovt ]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  e2e-smoke:
+    name: E2E Smoke Tests - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.27.x'
+
+      - name: Install Ninja (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install ninja
+
+      - name: Install Ninja (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install ninja
+        shell: cmd
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock pyyaml
+        shell: bash
+
+      - name: Run smoke tests
+        run: |
+          pytest -m "e2e and smoke" -v --tb=short
+        shell: bash
+        timeout-minutes: 10
+
+  e2e-full:
+    name: E2E Full Suite - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    needs: e2e-smoke
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.27.x'
+
+      - name: Install Ninja (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install ninja
+
+      - name: Install Ninja (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install ninja
+        shell: cmd
+
+      - name: Cache toolchains
+        uses: actions/cache@v3
+        with:
+          path: ~/.toolchainkit/toolchains
+          key: toolchains-${{ matrix.os }}-${{ hashFiles('tests/e2e/toolchain-versions.txt') }}
+          restore-keys: |
+            toolchains-${{ matrix.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock pyyaml
+        shell: bash
+
+      - name: Run E2E tests
+        run: |
+          pytest -m "e2e and not slow" -v --tb=short
+        shell: bash
+        timeout-minutes: 45
+
+      - name: Upload E2E logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-${{ matrix.os }}
+          path: |
+            tests/e2e/logs/
+            tests/e2e/artifacts/
+          retention-days: 7

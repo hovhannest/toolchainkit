@@ -1,0 +1,102 @@
+# Mold Linker Layer Configuration
+# Standalone linker layer for ultra-fast linking
+
+name: "mold"
+display_name: "Mold (Modern Linker)"
+type: "linker"
+
+# Description
+description: |
+  Mold is a modern, ultra-fast linker designed for large C++ projects.
+  It's significantly faster than both GNU ld and LLVM lld, often by 5-10x.
+  Linux-only (currently).
+
+# Linker selection flag
+flag: "-fuse-ld=mold"
+
+# Supported platforms
+supported_platforms:
+  - "linux"                       # Mold is currently Linux-only
+
+# Supported compilers
+supported_compilers:
+  - "gcc"
+  - "clang"
+
+# Linker-specific flags (optional)
+linker_flags:
+  # Performance flags
+  performance:
+    - "--threads"                 # Enable parallel linking (default: all cores)
+
+  # Debug flags
+  debug:
+    - "--verbose"                 # Verbose output
+    - "--print-map"               # Print link map
+
+  # Optimization flags
+  optimization:
+    - "--gc-sections"             # Remove unused sections
+    - "--icf=all"                 # Identical code folding (aggressive)
+
+# Platform-specific settings
+platform_overrides:
+  linux:
+    executable: "mold"            # Mold executable name
+    # Alternative: Use mold wrapper
+    # /usr/bin/mold -run <compiler> ...
+
+# Performance characteristics
+performance:
+  speed: "very_fast"              # 5-10x faster than GNU ld, 2-3x faster than lld
+  memory_usage: "high"            # Uses more memory for speed
+  parallel: true                  # Highly parallel design
+
+# Feature support
+features:
+  thin_lto: true                  # Supports Thin LTO
+  full_lto: true                  # Supports Full LTO
+  gc_sections: true               # Garbage collection of unused sections
+  icf: true                       # Identical code folding
+  build_id: true                  # Build ID generation
+  compress_debug: true            # Debug section compression
+  split_dwarf: true               # Split DWARF support
+
+# Usage notes
+notes: |
+  Mold is the fastest linker available for Linux C++ development. It's
+  particularly beneficial for large projects with long link times.
+
+  Usage:
+    tkgen configure --layers base/clang-18,linker/mold
+    tkgen configure --layers base/gcc-13,linker/mold
+
+  Mold can reduce link times by 5-10x compared to traditional linkers,
+  making it ideal for development builds where fast iteration is important.
+
+  Requirements:
+    - Linux only (x86_64 or ARM64)
+    - mold package must be installed
+    - Alternatively, download from https://github.com/rui314/mold
+
+  Installation:
+    # Ubuntu/Debian
+    sudo apt install mold
+
+    # Fedora
+    sudo dnf install mold
+
+    # Arch Linux
+    sudo pacman -S mold
+
+    # From source
+    git clone https://github.com/rui314/mold.git
+    cd mold
+    make -j$(nproc)
+    sudo make install
+
+  Performance Tips:
+    - Mold shines with large projects (>100K LOC)
+    - Uses more memory, ensure adequate RAM (8GB+ recommended)
+    - Perfect for development builds (fast iteration)
+    - Consider lld for production builds (better compatibility)

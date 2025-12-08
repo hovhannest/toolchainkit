@@ -1,0 +1,85 @@
+# mimalloc (Microsoft) Memory Allocator Layer
+# Microsoft's secure allocator with free-list sharding
+
+type: allocator
+name: mimalloc
+display_name: "mimalloc (Microsoft)"
+description: "Microsoft's secure, high-performance allocator"
+homepage: "https://github.com/microsoft/mimalloc"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: very_low
+  overhead: very_low
+  profiling: false
+  security: high
+  best_for: "Security (free-list sharding), high performance"
+
+# Integration methods
+integration_methods:
+  - link
+  - ld_preload
+
+# Link-time integration
+link:
+  flags: ["-lmimalloc"]
+  required_packages:
+    apt: ["libmimalloc-dev"]
+    brew: ["mimalloc"]
+    pacman: ["mimalloc"]
+    dnf: ["mimalloc-devel"]
+
+# LD_PRELOAD integration
+ld_preload:
+  library_paths:
+    linux: "/usr/lib/x86_64-linux-gnu/libmimalloc.so.2"
+    macos: "/usr/local/lib/libmimalloc.dylib"
+    windows: "mimalloc.dll"
+  env_vars:
+    MIMALLOC_SHOW_STATS: "0"
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/lib/x86_64-linux-gnu"
+      - "/usr/lib/aarch64-linux-gnu"
+      - "/usr/local/lib"
+  macos:
+    supported: true
+    default_method: link
+    library_search_paths:
+      - "/usr/local/lib"
+      - "/opt/homebrew/lib"
+  windows:
+    supported: true
+    default_method: link
+    library_name: "mimalloc.lib"
+    dll_name: "mimalloc.dll"
+
+# Configuration options
+options:
+  show_stats:
+    description: "Show allocation statistics at exit"
+    default: false
+    env_var: "MIMALLOC_SHOW_STATS"
+  secure:
+    description: "Enable security features (free-list encoding)"
+    default: true
+    compile_flag: "-DMI_SECURE=4"
+
+# Conflicts
+conflicts:
+  - type: sanitizer
+    names: ["address", "thread", "memory"]
+    reason: "Sanitizers use their own memory allocators"
+
+# Performance notes
+performance:
+  overhead: "~2-5% compared to system malloc"
+  gains: "15-35% improvement in multi-threaded applications"
+  memory: "Very low fragmentation, excellent memory utilization"
+  security: "Free-list sharding prevents many heap exploitation techniques"

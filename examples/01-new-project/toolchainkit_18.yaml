@@ -1,0 +1,24 @@
+version: 1
+project:
+  name: example-project
+  version: 0.1.0
+  description: iOS
+toolchains:
+  llvm-18:
+    type: llvm
+    version: 18.1.8
+    stdlib: libc++
+defaults:
+  toolchain: llvm-18
+  build_type: Release
+  generator: Xcode
+build:
+  types:
+  - Release
+  parallel_jobs: auto
+cross:
+  enabled: true
+  target: ios
+  ios:
+    platform: iphoneos
+    deployment_target: '15.0'

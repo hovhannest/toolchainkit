@@ -1,0 +1,14 @@
+type: stdlib
+name: libstdc++
+stdlib: libstdc++
+description: "GNU libstdc++ standard library"
+
+requires:
+  compiler: [gcc, clang]
+
+flags:
+  link:
+    - "-lstdc++"
+
+defines:
+  - "_GLIBCXX_USE_CXX11_ABI=1"

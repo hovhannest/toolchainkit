@@ -1,0 +1,44 @@
+name: stack-protector-all
+type: security
+description: Stack buffer overflow protection (maximum protection mode)
+security_type: stack_protector
+level: all
+
+# Flags applied
+flags:
+  compile:
+    - "-fstack-protector-all"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true
+  windows-arm64: true
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: moderate  # 5-15% overhead
+
+# Security characteristics
+characteristics:
+  protection_scope: all functions regardless of stack usage
+  false_positive_rate: low
+  recommended_for: security-critical builds, development/testing
+  compatibility: high - supported by GCC 4.1+ and Clang 3.0+
+
+# Conflicts
+conflicts:
+  - type: stack_protector
+    reason: Multiple stack protector levels are mutually exclusive
+
+# Usage notes
+notes: |
+  Stack protector all provides maximum protection by adding stack canaries
+  to ALL functions, regardless of their stack usage patterns.
+  This provides the strongest protection but with noticeable performance overhead.
+  Best suited for:
+  - Security-critical applications
+  - Development and testing phases
+  - When maximum security is required and performance is secondary

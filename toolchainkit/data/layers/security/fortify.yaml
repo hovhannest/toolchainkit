@@ -1,0 +1,55 @@
+name: fortify
+type: security
+description: Fortify source level 2 - buffer overflow detection at compile/runtime
+security_type: fortify
+level: "2"
+
+# Flags applied
+flags:
+  compile:
+    - "-D_FORTIFY_SOURCE=2"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true  # MinGW/Cygwin
+  windows-arm64: true
+  macos-x64: true
+  macos-arm64: true
+
+# Performance impact
+performance_impact: minimal  # <2% overhead
+
+# Security characteristics
+characteristics:
+  protection_type: compile-time and runtime buffer overflow checks
+  functions_protected: strcpy, memcpy, sprintf, printf, gets, and more
+  detection_time: compile-time (some) and runtime (most)
+  requires_optimization: true  # needs -O1 or higher
+
+# Conflicts
+conflicts:
+  - type: fortify
+    reason: Multiple fortify levels are mutually exclusive
+
+# Requirements
+requirements:
+  - Requires optimization level -O1 or higher
+  - Glibc 2.3.4+ on Linux
+  - Some checks require runtime support
+
+# Usage notes
+notes: |
+  Fortify source level 2 adds compile-time and runtime checks for buffer overflows
+  in standard library functions like strcpy, memcpy, sprintf, etc.
+
+  Level 2 provides:
+  - All checks from level 1
+  - Additional checks that may cause false positives in valid code
+  - Runtime checks for more complex cases
+
+  Best practices:
+  - Use with -O2 or higher optimization
+  - Test thoroughly as it may catch legitimate code patterns
+  - Level 2 is recommended for most production builds

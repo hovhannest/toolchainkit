@@ -1,0 +1,27 @@
+name: "zig-compiler"
+version: "1.0.0"
+type: "compiler"
+description: "Zig compiler support for ToolchainKit with cross-compilation"
+author: "ToolchainKit Community"
+homepage: "https://github.com/toolchainkit/tk-zig"
+license: "MIT"
+entry_point: "zig_plugin.ZigCompilerPlugin"
+
+min_toolchainkit_version: "1.0.0"
+
+platforms:
+  - "linux-x64"
+  - "linux-arm64"
+  - "windows-x64"
+  - "macos-x64"
+  - "macos-arm64"
+
+tags:
+  - "compiler"
+  - "zig"
+  - "cross-platform"
+  - "llvm"
+
+permissions:
+  - "filesystem.read"
+  - "process.execute"

@@ -1,0 +1,22 @@
+type: base
+name: clang-18
+compiler: clang
+version: 18.1.8
+description: "LLVM Clang 18.1.8 - Latest stable with C++23 support"
+
+flags:
+  common:
+    - "-fcolor-diagnostics"
+    - "-fdiagnostics-show-template-tree"
+    - "-pthread"
+  compile:
+    - "-Wall"
+    - "-Wextra"
+  link:
+    - "-fuse-ld=lld"
+
+cmake_variables:
+  CMAKE_C_COMPILER: "{{toolchain_root}}/bin/clang"
+  CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/clang++"
+  CMAKE_AR: "{{toolchain_root}}/bin/llvm-ar"
+  CMAKE_RANLIB: "{{toolchain_root}}/bin/llvm-ranlib"

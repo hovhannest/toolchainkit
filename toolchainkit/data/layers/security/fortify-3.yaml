@@ -1,0 +1,61 @@
+name: fortify-3
+type: security
+description: Fortify source level 3 - enhanced buffer overflow detection (GCC 12+)
+security_type: fortify
+level: "3"
+
+# Flags applied
+flags:
+  compile:
+    - "-D_FORTIFY_SOURCE=3"
+
+# Platform support
+platform_support:
+  linux-x64: true
+  linux-arm64: true
+  windows-x64: true  # MinGW with GCC 12+
+  windows-arm64: true
+  macos-x64: true  # Clang 16+ experimental
+  macos-arm64: true
+
+# Performance impact
+performance_impact: low  # 2-5% overhead
+
+# Security characteristics
+characteristics:
+  protection_type: enhanced compile-time and runtime buffer overflow checks
+  functions_protected: all fortify functions plus dynamic arrays
+  detection_time: compile-time and runtime
+  requires_optimization: true  # needs -O1 or higher
+  requires_gcc: "12.0"  # GCC 12 or later
+
+# Conflicts
+conflicts:
+  - type: fortify
+    reason: Multiple fortify levels are mutually exclusive
+
+# Requirements
+requirements:
+  - Requires GCC 12+ or Clang 16+
+  - Requires optimization level -O1 or higher
+  - Glibc 2.36+ on Linux for full support
+
+# Usage notes
+notes: |
+  Fortify source level 3 is a new addition in GCC 12 that provides enhanced
+  buffer overflow detection beyond level 2.
+
+  Level 3 adds:
+  - All checks from levels 1 and 2
+  - Dynamic array bounds checking using __builtin_dynamic_object_size
+  - Better detection of overflows in dynamically sized objects
+  - More precise bounds checking for VLAs and alloca
+
+  Compiler requirements:
+  - GCC 12.0 or later (full support)
+  - Clang 16+ (experimental, partial support)
+
+  Best practices:
+  - Use for security-critical applications with modern toolchains
+  - Test thoroughly as it's newer and may have edge cases
+  - Ensure your standard library supports _FORTIFY_SOURCE=3

@@ -1,0 +1,21 @@
+type: base
+name: clang-17
+compiler: clang
+version: 17.0.6
+description: "LLVM Clang 17.0.6 - Stable with C++20 support"
+
+flags:
+  common:
+    - "-fcolor-diagnostics"
+    - "-pthread"
+  compile:
+    - "-Wall"
+    - "-Wextra"
+  link:
+    - "-fuse-ld=lld"
+
+cmake_variables:
+  CMAKE_C_COMPILER: "{{toolchain_root}}/bin/clang"
+  CMAKE_CXX_COMPILER: "{{toolchain_root}}/bin/clang++"
+  CMAKE_AR: "{{toolchain_root}}/bin/llvm-ar"
+  CMAKE_RANLIB: "{{toolchain_root}}/bin/llvm-ranlib"

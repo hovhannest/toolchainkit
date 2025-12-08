@@ -1,0 +1,44 @@
+# Default System Memory Allocator Layer
+# Use the system's default malloc implementation
+
+type: allocator
+name: default
+display_name: "System Default"
+description: "System default malloc implementation"
+
+# Allocator characteristics
+characteristics:
+  thread_safe: true
+  fragmentation: varies
+  overhead: minimal
+  profiling: false
+  best_for: "Baseline testing, maximum compatibility"
+
+# No special integration needed
+integration_methods:
+  - none
+
+# Platform-specific settings
+platforms:
+  linux:
+    supported: true
+    implementation: "glibc ptmalloc2 or musl malloc"
+    notes: "glibc uses ptmalloc2, musl uses a simpler allocator"
+  macos:
+    supported: true
+    implementation: "Apple's magazine malloc"
+    notes: "macOS uses a zone-based allocator"
+  windows:
+    supported: true
+    implementation: "Windows heap manager"
+    notes: "Windows uses Low Fragmentation Heap (LFH)"
+
+# No conflicts (baseline)
+conflicts: []
+
+# Performance notes
+performance:
+  overhead: "Baseline (0%)"
+  gains: "N/A (this is the baseline)"
+  memory: "Varies by platform and libc implementation"
+  note: "Use as baseline for comparison with other allocators"

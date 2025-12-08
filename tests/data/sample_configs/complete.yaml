@@ -1,0 +1,43 @@
+version: 1
+project: complete-example
+
+toolchains:
+  - name: llvm-18
+    type: clang
+    version: 18.1.8
+    stdlib: libc++
+    source: prebuilt
+
+  - name: gcc-13
+    type: gcc
+    version: 13.2.0
+
+defaults:
+  linux: gcc-13
+  macos: llvm-18
+
+toolchain_cache:
+  location: shared
+  path: ~/.toolchainkit
+
+packages:
+  manager: conan
+  conan:
+    version: 2.0
+
+build:
+  backend: ninja
+  parallel: auto
+  caching:
+    enabled: true
+    tool: sccache
+
+targets:
+  - os: android
+    arch: arm64
+    api_level: 29
+
+modules:
+  - core
+  - cmake
+  - caching

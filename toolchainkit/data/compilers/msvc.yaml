@@ -1,0 +1,119 @@
+# MSVC (Microsoft Visual C++) Configuration
+# Production configuration for MSVC toolchain
+
+# Compiler identification
+name: "msvc"
+display_name: "Microsoft Visual C++"
+type: "msvc"
+compiler_family: "msvc"
+
+# Version detection
+version_command: []  # MSVC version detected via vswhere or registry
+version_regex: null
+
+# Compiler executables
+executables:
+  c: "cl.exe"
+  cxx: "cl.exe"
+  ar: "lib.exe"
+  ranlib: ""  # MSVC doesn't use ranlib
+  linker: "link.exe"
+
+# Build type flags (MSVC uses / prefix)
+flags:
+  debug:
+    - "/MDd"  # Multithreaded debug DLL runtime
+    - "/Zi"   # Debug information
+    - "/Od"   # Disable optimization
+    - "/RTC1" # Runtime checks
+  release:
+    - "/MD"     # Multithreaded release DLL runtime
+    - "/O2"     # Maximize speed
+    - "/Ob2"    # Inline expansion
+    - "/DNDEBUG"
+    - "/GL"     # Whole program optimization
+  relwithdebinfo:
+    - "/MD"
+    - "/Zi"
+    - "/O2"
+    - "/Ob1"    # Inline expansion (less aggressive)
+    - "/DNDEBUG"
+  minsizerel:
+    - "/MD"
+    - "/O1"     # Minimize size
+    - "/Ob1"
+    - "/DNDEBUG"
+
+# Warning flags (MSVC uses /W levels)
+warning_levels:
+  "off": ["/w"]           # Disable all warnings
+  basic: ["/W3"]          # Production quality warnings (default)
+  extra: ["/W4"]          # Informational warnings
+  strict:
+    - "/W4"
+    - "/permissive-"      # Standards conformance
+  pedantic:
+    - "/Wall"             # All warnings (very verbose)
+    - "/permissive-"
+  error: ["/WX"]          # Treat warnings as errors
+
+# Language standards (MSVC uses /std: prefix)
+standards:
+  c:
+    default: "c17"
+    supported: ["c11", "c17"]
+    flag_template: "/std:{standard}"
+  cxx:
+    default: "c++20"
+    supported: ["c++14", "c++17", "c++20", "c++latest"]
+    flag_template: "/std:{standard}"
+
+# Standard library configuration (MSVC uses its own STL)
+stdlib:
+  msvc:
+    compile_flags: []  # Default, built-in
+    defines: []
+    link_flags: []
+    required_version: null
+
+# Linker configuration
+linker:
+  link:
+    flag: "/link"
+    supported_platforms: ["windows"]
+
+# Features (sanitizers, coverage, LTO)
+features:
+  # Sanitizers (MSVC has limited sanitizer support)
+  sanitizers:
+    address:
+      compile_flags: ["/fsanitize=address"]
+      link_flags: []
+      supported_platforms: ["windows"]
+      required_version: "16.9"  # VS 2019 16.9+
+
+  # Code coverage (requires separate tools)
+  coverage:
+    flags: []  # Requires external tools like OpenCppCoverage
+    link_flags: []
+
+  # Link-time optimization (LTCG)
+  lto:
+    full:
+      compile_flags: ["/GL"]  # Whole program optimization
+      link_flags: ["/LTCG"]   # Link-time code generation
+
+# CMake integration
+cmake:
+  variables:
+    CMAKE_C_COMPILER: "cl.exe"
+    CMAKE_CXX_COMPILER: "cl.exe"
+    CMAKE_AR: "lib.exe"
+    CMAKE_LINKER: "link.exe"
+  generator_toolset: "host=x64"  # Use 64-bit toolset
+
+# Platform-specific overrides
+platform_overrides:
+  windows:
+    # MSVC is Windows-only, no overrides needed
+    default_stdlib: "msvc"
