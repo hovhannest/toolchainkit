@@ -8,6 +8,7 @@ and ensures consistent directory structure across all ToolchainKit operations.
 Directory Structure:
     Global Cache (~/.toolchainkit/ or %USERPROFILE%\\.toolchainkit\\):
         - toolchains/     : Downloaded/extracted toolchain installations
+        - downloads/      : Temporary storage for downloaded archives
         - lock/           : Concurrent access control files
         - registry.json   : Toolchain reference counting database
 
@@ -125,6 +126,7 @@ def ensure_global_cache_structure() -> Path:
     Creates:
         - Global cache root directory
         - toolchains/ subdirectory
+        - downloads/ subdirectory
         - lock/ subdirectory
         - registry.json file (empty JSON object if doesn't exist)
 
@@ -157,7 +159,7 @@ def ensure_global_cache_structure() -> Path:
         )
 
     # Create subdirectories
-    subdirs = ["toolchains", "lock"]
+    subdirs = ["toolchains", "downloads", "lock"]
     for subdir in subdirs:
         subdir_path = global_cache / subdir
         try:
