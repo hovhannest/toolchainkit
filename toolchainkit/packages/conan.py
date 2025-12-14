@@ -218,9 +218,11 @@ tools.cmake.cmaketoolchain:generator=Ninja
                     "Documentation: https://docs.conan.io/2/installation.html"
                 )
 
-        # Priority 3: Downloaded Conan in toolchain directory
-        toolchainkit_dir = self.project_root / ".toolchainkit"
-        tools_dir = toolchainkit_dir / "tools"
+        # Priority 3: Downloaded Conan in global tools directory
+        from toolchainkit.core.directory import get_global_cache_dir
+
+        global_cache_dir = get_global_cache_dir()
+        tools_dir = global_cache_dir / "tools"
 
         downloader = ConanDownloader(tools_dir)
 

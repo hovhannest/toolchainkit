@@ -359,3 +359,52 @@ class TestToolchainNameParsing:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestRegression:
+    """Regression tests for reported bugs."""
+
+    @patch("toolchainkit.cli.commands.configure.check_initialized", return_value=True)
+    @patch("toolchainkit.cli.commands.configure.load_yaml_config")
+    @patch("toolchainkit.plugins.registry.get_global_registry")
+    @patch("toolchainkit.core.platform.detect_platform")
+    def test_configure_crash_on_toolchain_download_failure(
+        self,
+        mock_platform,
+        mock_registry,
+        mock_load_config,
+        mock_check_init,
+        mock_args,
+        tmp_path,
+    ):
+        """
+        Test that configure does not crash with UnboundLocalError when toolchain download fails.
+        Regression test for: local variable 'compiler_type' referenced before assignment
+        """
+        # Setup mocks
+        mock_args.project_root = tmp_path
+        (tmp_path / "toolchainkit.yaml").touch()
+
+        mock_load_config.return_value = {"toolchain": {"type": "llvm", "version": "18"}}
+
+        # Mock platform
+        mock_platform_info = Mock()
+        mock_platform_info.os = "windows"
+        mock_platform_info.arch = "x86_64"
+        mock_platform_info.platform_string.return_value = "windows-x86_64"
+        mock_platform.return_value = mock_platform_info
+
+        # Mock registry to return no providers, causing a download failure
+        mock_reg_instance = Mock()
+        mock_reg_instance.get_toolchain_providers.return_value = []
+        # Strategy lookup needs to work even if providers don't
+        mock_reg_instance.has_compiler_strategy.return_value = True
+        mock_reg_instance.get_compiler_strategy.return_value = Mock()
+        mock_registry.return_value = mock_reg_instance
+
+        # Run configure
+        result = configure.run(mock_args)
+
+        assert (
+            result == 0
+        ), "Configure should succeed with fallback when toolchain download fails"

@@ -71,6 +71,35 @@ def initialize_core_package_managers(registry) -> None:
         logger.debug("vcpkg integration not available")
 
 
+def initialize_core_providers(registry) -> None:
+    """
+    Register core toolchain providers with the registry.
+
+    This enables toolchain downloading functionality and plugin-based provision.
+    """
+    try:
+        from toolchainkit.toolchain.downloader import ToolchainDownloader
+        from toolchainkit.toolchain.providers import (
+            DownloadToolchainProvider,
+        )
+
+        downloader = ToolchainDownloader()
+
+        # Create providers
+        download_provider = DownloadToolchainProvider(downloader)
+
+        # Plugin provider needs a plugin manager
+        # Use a temporary one for now, or just register download provider
+        # Ideally the plugin manager should be a singleton or passed in
+        # For now we'll register the download provider directly as it's the core requirement
+
+        registry.register_toolchain_provider(download_provider)
+        logger.debug("Registered download toolchain provider")
+
+    except Exception as e:
+        logger.warning(f"Failed to register core toolchain providers: {e}")
+
+
 def initialize_core(registry=None) -> None:
     """
     Initialize the core framework.
@@ -89,6 +118,7 @@ def initialize_core(registry=None) -> None:
 
     initialize_core_strategies(registry)
     initialize_core_package_managers(registry)
+    initialize_core_providers(registry)
     logger.info("Core framework initialized")
 
 
@@ -96,4 +126,5 @@ __all__ = [
     "initialize_core",
     "initialize_core_strategies",
     "initialize_core_package_managers",
+    "initialize_core_providers",
 ]

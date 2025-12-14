@@ -294,6 +294,24 @@ def run(args) -> int:
     try:
         toolchain_file = cmake_dir / "toolchain.cmake"
 
+        # Determine compiler type from config or toolchain name
+        compiler_type = None
+        if "toolchain" in config and "type" in config["toolchain"]:
+            compiler_type = config["toolchain"]["type"]
+            logger.debug(f"Using compiler type from config: {compiler_type}")
+
+        if not compiler_type:
+            # Fallback: detect from toolchain name
+            if "llvm" in toolchain_name.lower() or "clang" in toolchain_name.lower():
+                compiler_type = "clang"
+            elif "gcc" in toolchain_name.lower():
+                compiler_type = "gcc"
+            elif "msvc" in toolchain_name.lower():
+                compiler_type = "msvc"
+            else:
+                # Use the toolchain type directly (e.g., "zig", "rust", etc.)
+                compiler_type = toolchain_type
+
         if toolchain_path:
             # Generate proper toolchain file
             from toolchainkit.cmake.toolchain_generator import (
@@ -302,27 +320,6 @@ def run(args) -> int:
             )
 
             generator = CMakeToolchainGenerator(project_root)
-
-            # Determine compiler type from config or toolchain name
-            compiler_type = None
-            if "toolchain" in config and "type" in config["toolchain"]:
-                compiler_type = config["toolchain"]["type"]
-                logger.debug(f"Using compiler type from config: {compiler_type}")
-
-            if not compiler_type:
-                # Fallback: detect from toolchain name
-                if (
-                    "llvm" in toolchain_name.lower()
-                    or "clang" in toolchain_name.lower()
-                ):
-                    compiler_type = "clang"
-                elif "gcc" in toolchain_name.lower():
-                    compiler_type = "gcc"
-                elif "msvc" in toolchain_name.lower():
-                    compiler_type = "msvc"
-                else:
-                    # Use the toolchain type directly (e.g., "zig", "rust", etc.)
-                    compiler_type = toolchain_type
 
             # Build cross-compile dict if target specified
             cross_compile = None
@@ -538,7 +535,7 @@ def _run_bootstrap(
     ninja_path = None
     preferred_generator = None
 
-    # Try to get preferred generator from strategy
+    # Try to get preferred generator from config or strategy
     from toolchainkit.plugins.registry import get_global_registry
 
     registry = get_global_registry()
@@ -548,7 +545,19 @@ def _run_bootstrap(
     if "toolchain" in config and "type" in config["toolchain"]:
         compiler_type = config["toolchain"]["type"]
 
-    if compiler_type and registry.has_compiler_strategy(compiler_type):
+    # Check config for generator preference first
+    # Check defaults or build section
+    configured_generator = None
+    if "defaults" in config and "generator" in config["defaults"]:
+        configured_generator = config["defaults"]["generator"]
+    elif "build" in config and "generator" in config["build"]:
+        configured_generator = config["build"]["generator"]
+
+    if configured_generator:
+        # Use user configured generator
+        preferred_generator = configured_generator
+        logger.debug(f"Using configured generator: {preferred_generator}")
+    elif compiler_type and registry.has_compiler_strategy(compiler_type):
         try:
             strategy = registry.get_compiler_strategy(compiler_type)
             preferred_generator = strategy.get_preferred_generator(platform)
@@ -650,6 +659,9 @@ def _run_bootstrap(
 
     if use_ninja:
         cmake_cmd.extend(["-G", "Ninja"])
+    elif preferred_generator:
+        # Pass other generators if specified
+        cmake_cmd.extend(["-G", preferred_generator])
 
     # Toolchain file selection
     # We use the ToolchainKit toolchain as primary

@@ -38,8 +38,15 @@ class DownloadToolchainProvider(ToolchainProvider):
         """Check if toolchain is available for download."""
         try:
             # Check if toolchain is in registry
-            metadata = self._downloader.metadata_registry.get_toolchain(toolchain_type)
-            return metadata is not None
+            toolchains = self._downloader.metadata_registry.list_toolchains()
+            if toolchain_type not in toolchains:
+                return False
+
+            # Check if version is valid/resolvable
+            resolved = self._downloader.metadata_registry.resolve_version(
+                toolchain_type, version
+            )
+            return resolved is not None
         except Exception:
             return False
 
