@@ -141,8 +141,10 @@ class BuildCacheDetector:
             logger.info(f"Found sccache on PATH: {sccache_path}")
             return Path(sccache_path)
 
-        # Check local tools directory
-        tools_dir = Path.home() / ".toolchainkit" / "tools"
+        # Check global tools directory
+        from toolchainkit.core.directory import get_global_cache_dir
+
+        tools_dir = get_global_cache_dir() / "tools"
         local_sccache = tools_dir / exe_name
 
         if local_sccache.exists() and os.access(local_sccache, os.X_OK):
@@ -191,8 +193,10 @@ class BuildCacheDetector:
             logger.info(f"Found ccache on PATH: {ccache_path}")
             return Path(ccache_path)
 
-        # Check local tools directory
-        tools_dir = Path.home() / ".toolchainkit" / "tools"
+        # Check global tools directory
+        from toolchainkit.core.directory import get_global_cache_dir
+
+        tools_dir = get_global_cache_dir() / "tools"
         local_ccache = tools_dir / exe_name
 
         if local_ccache.exists() and os.access(local_ccache, os.X_OK):
@@ -331,7 +335,9 @@ class BuildCacheInstaller:
             platform_info: Platform information. If None, auto-detect.
         """
         self.platform = platform_info or detect_platform()
-        self.tools_dir = Path.home() / ".toolchainkit" / "tools"
+        from toolchainkit.core.directory import get_global_cache_dir
+
+        self.tools_dir = get_global_cache_dir() / "tools"
         self.tools_dir.mkdir(parents=True, exist_ok=True)
 
     def install_sccache(self, version: str = "latest") -> Path:
@@ -590,7 +596,11 @@ class BuildCacheManager:
         """
         self.project_root = Path(project_root)
         self.platform = platform_info or detect_platform()
-        self.tools_dir = tools_dir or (Path.home() / ".toolchainkit" / "tools")
+        if tools_dir is None:
+            from toolchainkit.core.directory import get_global_cache_dir
+
+            tools_dir = get_global_cache_dir() / "tools"
+        self.tools_dir = tools_dir
         self.detector = BuildCacheDetector(self.platform)
         # Keep old installer for backward compatibility
         self.installer = BuildCacheInstaller(self.platform)

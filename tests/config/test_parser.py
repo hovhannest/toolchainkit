@@ -776,5 +776,123 @@ toolchain_cache:
     assert config.toolchain_cache["location"] == "shared"
 
 
+@pytest.mark.unit
+def test_parse_build_with_custom_flags(tmp_path):
+    """Test parsing build configuration with custom compiler and linker flags."""
+    # Arrange
+    config_file = tmp_path / "toolchainkit.yaml"
+    config_file.write_text(
+        """
+version: 1
+toolchains:
+  - name: llvm-18
+    type: clang
+    version: 18.1.8
+
+build:
+  backend: ninja
+  flags:
+    cxx: -fsanitize=address -fno-omit-frame-pointer -g
+    linker: -fsanitize=address
+"""
+    )
+
+    # Act
+    config = parse_config(config_file)
+
+    # Assert
+    assert config.build.flags is not None
+    assert config.build.flags["cxx"] == "-fsanitize=address -fno-omit-frame-pointer -g"
+    assert config.build.flags["linker"] == "-fsanitize=address"
+
+
+@pytest.mark.unit
+def test_parse_build_with_all_flag_types(tmp_path):
+    """Test parsing build configuration with all types of custom flags."""
+    # Arrange
+    config_file = tmp_path / "toolchainkit.yaml"
+    config_file.write_text(
+        """
+version: 1
+toolchains:
+  - name: gcc-13
+    type: gcc
+    version: 13.2.0
+
+build:
+  backend: ninja
+  flags:
+    cxx: -Wall -Wextra
+    c: -Wall -Wpedantic
+    linker: -flto
+    exe_linker: -pie
+    shared_linker: -shared
+"""
+    )
+
+    # Act
+    config = parse_config(config_file)
+
+    # Assert
+    assert config.build.flags is not None
+    assert config.build.flags["cxx"] == "-Wall -Wextra"
+    assert config.build.flags["c"] == "-Wall -Wpedantic"
+    assert config.build.flags["linker"] == "-flto"
+    assert config.build.flags["exe_linker"] == "-pie"
+    assert config.build.flags["shared_linker"] == "-shared"
+
+
+@pytest.mark.unit
+def test_parse_build_with_invalid_flag_key(tmp_path):
+    """Test that invalid flag keys raise a ConfigError."""
+    # Arrange
+    config_file = tmp_path / "toolchainkit.yaml"
+    config_file.write_text(
+        """
+version: 1
+toolchains:
+  - name: llvm-18
+    type: clang
+    version: 18.1.8
+
+build:
+  flags:
+    invalid_key: -Wall
+"""
+    )
+
+    # Act & Assert
+    with pytest.raises(ConfigError) as exc_info:
+        parse_config(config_file)
+
+    assert "Invalid flag keys" in str(exc_info.value)
+    assert "invalid_key" in str(exc_info.value)
+
+
+@pytest.mark.unit
+def test_parse_build_with_non_dict_flags(tmp_path):
+    """Test that non-dict flags raise a ConfigError."""
+    # Arrange
+    config_file = tmp_path / "toolchainkit.yaml"
+    config_file.write_text(
+        """
+version: 1
+toolchains:
+  - name: llvm-18
+    type: clang
+    version: 18.1.8
+
+build:
+  flags: "-Wall -Wextra"
+"""
+    )
+
+    # Act & Assert
+    with pytest.raises(ConfigError) as exc_info:
+        parse_config(config_file)
+
+    assert "build.flags must be a dictionary" in str(exc_info.value)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

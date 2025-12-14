@@ -56,7 +56,38 @@ build:
   types: [Debug, Release, ...]  # Build types
   parallel_jobs: int|auto   # Parallel jobs
   directory: string         # Build dir (default: build)
+  flags:                    # Custom compiler and linker flags
+    cxx: string             # C++ compiler flags
+    c: string               # C compiler flags
+    linker: string          # Both exe and shared linker flags
+    exe_linker: string      # Executable linker flags only
+    shared_linker: string   # Shared library linker flags only
 ```
+
+**Custom Flags:**
+
+You can specify custom compiler and linker flags that will be added to the generated CMake toolchain file:
+
+```yaml
+build:
+  flags:
+    cxx: -fsanitize=address -fno-omit-frame-pointer -g
+    linker: -fsanitize=address
+```
+
+**Available flag types:**
+- `cxx`: C++ compiler flags (added to `CMAKE_CXX_FLAGS_INIT`)
+- `c`: C compiler flags (added to `CMAKE_C_FLAGS_INIT`)
+- `linker`: Linker flags for both executables and shared libraries
+- `exe_linker`: Linker flags for executables only (added to `CMAKE_EXE_LINKER_FLAGS_INIT`)
+- `shared_linker`: Linker flags for shared libraries only (added to `CMAKE_SHARED_LINKER_FLAGS_INIT`)
+
+**Common use cases:**
+- Sanitizers: `-fsanitize=address`, `-fsanitize=thread`, `-fsanitize=undefined`
+- Debug symbols: `-g`, `-g3`, `-ggdb`
+- Optimization: `-O2`, `-O3`, `-Os`, `-Oz`
+- Warnings: `-Wall`, `-Wextra`, `-pedantic`
+- Link-time optimization: `-flto`, `-flto=thin`
 
 ### Toolchain Cache
 
@@ -240,6 +271,9 @@ toolchain_cache:
 build:
   types: [Debug, Release, RelWithDebInfo]
   parallel_jobs: auto
+  flags:
+    cxx: -fsanitize=address -fno-omit-frame-pointer -g
+    linker: -fsanitize=address
 
 packages:
   conan:

@@ -172,7 +172,14 @@ class TestBuildCacheDetector:
         sccache_path.touch()
         sccache_path.chmod(0o755)
 
-        monkeypatch.setattr(Path, "home", lambda: home_dir)
+        # Mock get_global_cache_dir to return our test directory
+        def mock_get_global_cache_dir():
+            return home_dir / ".toolchainkit"
+
+        monkeypatch.setattr(
+            "toolchainkit.core.directory.get_global_cache_dir",
+            mock_get_global_cache_dir,
+        )
 
         detector = BuildCacheDetector(mock_platform_linux)
         result = detector.detect_sccache()
@@ -348,7 +355,15 @@ class TestBuildCacheInstaller:
         """Test installer initialization."""
         home_dir = tmp_path / "home"
         home_dir.mkdir()
-        monkeypatch.setattr(Path, "home", lambda: home_dir)
+
+        # Mock get_global_cache_dir to return our test directory
+        def mock_get_global_cache_dir():
+            return home_dir / ".toolchainkit"
+
+        monkeypatch.setattr(
+            "toolchainkit.core.directory.get_global_cache_dir",
+            mock_get_global_cache_dir,
+        )
 
         installer = BuildCacheInstaller(mock_platform_linux)
 
@@ -438,7 +453,15 @@ class TestBuildCacheInstaller:
         home_dir.mkdir()
         tools_dir = home_dir / ".toolchainkit" / "tools"
         tools_dir.mkdir(parents=True)
-        monkeypatch.setattr(Path, "home", lambda: home_dir)
+
+        # Mock get_global_cache_dir to return our test directory
+        def mock_get_global_cache_dir():
+            return home_dir / ".toolchainkit"
+
+        monkeypatch.setattr(
+            "toolchainkit.core.directory.get_global_cache_dir",
+            mock_get_global_cache_dir,
+        )
 
         installer = BuildCacheInstaller(mock_platform_linux)
 

@@ -254,7 +254,11 @@ class BuildBackendDetector:
             platform_info = detect_platform()
 
         self.platform = platform_info
-        self.tools_dir = tools_dir or (Path.home() / ".toolchainkit" / "tools")
+        if tools_dir is None:
+            from ..core.directory import get_global_cache_dir
+
+            tools_dir = get_global_cache_dir() / "tools"
+        self.tools_dir = tools_dir
         self.custom_paths = custom_paths or {}
         self._backends = self._discover_backends()
 

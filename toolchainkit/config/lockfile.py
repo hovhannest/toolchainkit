@@ -527,8 +527,10 @@ class LockFileManager:
         Returns:
             Path to tool if found, None otherwise
         """
-        # Check .toolchainkit/tools/
-        tools_dir = self.project_root / ".toolchainkit" / "tools"
+        # Check global cache tools directory first
+        from toolchainkit.core.directory import get_global_cache_dir
+
+        tools_dir = get_global_cache_dir() / "tools"
 
         if os.name == "nt":
             tool_path = tools_dir / f"{tool_name}.exe"
@@ -538,20 +540,15 @@ class LockFileManager:
         if tool_path.exists():
             return tool_path
 
-        # Check global cache
-        try:
-            from toolchainkit.core.directory import get_global_cache_dir
+        # Fall back to project-local tools directory
+        local_tools_dir = self.project_root / ".toolchainkit" / "tools"
+        if os.name == "nt":
+            local_tool_path = local_tools_dir / f"{tool_name}.exe"
+        else:
+            local_tool_path = local_tools_dir / tool_name
 
-            global_tools = get_global_cache_dir() / "tools"
-            if os.name == "nt":
-                tool_path = global_tools / f"{tool_name}.exe"
-            else:
-                tool_path = global_tools / tool_name
-
-            if tool_path.exists():
-                return tool_path
-        except ImportError:
-            pass
+        if local_tool_path.exists():
+            return local_tool_path
 
         return None
 

@@ -865,5 +865,137 @@ class TestCompleteConfiguration:
         assert 'message(STATUS "ToolchainKit:' in content
 
 
+@pytest.mark.unit
+class TestCustomFlags:
+    """Test custom compiler and linker flags."""
+
+    def test_custom_cxx_flags(self, temp_dir, mock_llvm_toolchain):
+        """Test that custom C++ flags are properly written to toolchain file."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags={"cxx": "-fsanitize=address -fno-omit-frame-pointer -g"},
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        assert "# Custom compiler and linker flags" in content
+        assert (
+            'string(APPEND CMAKE_CXX_FLAGS_INIT " -fsanitize=address -fno-omit-frame-pointer -g")'
+            in content
+        )
+
+    def test_custom_c_flags(self, temp_dir, mock_llvm_toolchain):
+        """Test that custom C flags are properly written to toolchain file."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags={"c": "-Wall -Wpedantic"},
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        assert "# Custom compiler and linker flags" in content
+        assert 'string(APPEND CMAKE_C_FLAGS_INIT " -Wall -Wpedantic")' in content
+
+    def test_custom_linker_flags(self, temp_dir, mock_llvm_toolchain):
+        """Test that custom linker flags are properly written to toolchain file."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags={"linker": "-fsanitize=address"},
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        assert "# Custom compiler and linker flags" in content
+        assert (
+            'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " -fsanitize=address")'
+            in content
+        )
+        assert (
+            'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " -fsanitize=address")'
+            in content
+        )
+
+    def test_custom_exe_and_shared_linker_flags(self, temp_dir, mock_llvm_toolchain):
+        """Test that separate exe and shared linker flags work correctly."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags={
+                "exe_linker": "-pie",
+                "shared_linker": "-shared",
+            },
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        assert "# Custom compiler and linker flags" in content
+        assert 'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " -pie")' in content
+        assert 'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " -shared")' in content
+
+    def test_all_custom_flags_together(self, temp_dir, mock_llvm_toolchain):
+        """Test that all flag types can be specified together."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags={
+                "cxx": "-Wall -Wextra",
+                "c": "-Wall -Wpedantic",
+                "linker": "-flto",
+                "exe_linker": "-pie",
+                "shared_linker": "-shared",
+            },
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        assert "# Custom compiler and linker flags" in content
+        assert 'string(APPEND CMAKE_CXX_FLAGS_INIT " -Wall -Wextra")' in content
+        assert 'string(APPEND CMAKE_C_FLAGS_INIT " -Wall -Wpedantic")' in content
+        assert 'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " -flto")' in content
+        assert 'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " -flto")' in content
+        assert 'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " -pie")' in content
+        assert 'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " -shared")' in content
+
+    def test_no_custom_flags(self, temp_dir, mock_llvm_toolchain):
+        """Test that toolchain generation works without custom flags."""
+        generator = CMakeToolchainGenerator(temp_dir)
+
+        config = ToolchainFileConfig(
+            toolchain_id="llvm-18.1.8-linux-x64",
+            toolchain_path=mock_llvm_toolchain,
+            compiler_type="clang",
+            custom_flags=None,
+        )
+
+        toolchain_file = generator.generate(config)
+        content = toolchain_file.read_text()
+
+        # Custom flags section should not be present
+        assert "# Custom compiler and linker flags" not in content
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

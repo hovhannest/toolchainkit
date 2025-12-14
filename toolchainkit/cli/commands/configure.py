@@ -358,6 +358,12 @@ def run(args) -> int:
                         clang_format_path = format_exe
                         logger.info(f"Found clang-format: {format_exe}")
 
+            # Extract custom flags from build config if present
+            custom_flags = None
+            if "build" in config and "flags" in config["build"]:
+                custom_flags = config["build"]["flags"]
+                logger.debug(f"Using custom flags from config: {custom_flags}")
+
             config_obj = ToolchainFileConfig(
                 toolchain_id=toolchain_id,
                 toolchain_path=toolchain_path,
@@ -367,6 +373,7 @@ def run(args) -> int:
                 cross_compile=cross_compile,
                 clang_tidy_path=clang_tidy_path,
                 clang_format_path=clang_format_path,
+                custom_flags=custom_flags,
             )
 
             toolchain_file = generator.generate(config_obj)
@@ -571,7 +578,10 @@ def _run_bootstrap(
         print("Setting up Ninja build system...")
 
         try:
-            tools_dir = project_root / ".toolchainkit" / "tools"
+            from toolchainkit.core.directory import get_global_cache_dir
+
+            global_cache_dir = get_global_cache_dir()
+            tools_dir = global_cache_dir / "tools"
             downloader = NinjaDownloader(tools_dir, platform=platform)
             if not downloader.is_installed():
                 downloader.download()

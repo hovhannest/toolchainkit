@@ -49,6 +49,7 @@ class ToolchainFileConfig:
         package_manager: Package manager integration ('conan', 'vcpkg', None)
         clang_tidy_path: Path to clang-tidy executable (optional)
         clang_format_path: Path to clang-format executable (optional)
+        custom_flags: Custom compiler/linker flags dict with keys: cxx, c, linker, etc. (optional)
     """
 
     toolchain_id: str
@@ -63,6 +64,7 @@ class ToolchainFileConfig:
     package_manager: Optional[str] = None
     clang_tidy_path: Optional[Path] = None
     clang_format_path: Optional[Path] = None
+    custom_flags: Optional[Dict[str, str]] = None
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -714,7 +716,50 @@ class CMakeToolchainGenerator:
             List of flag configuration lines
         """
         strategy = self._get_strategy(config.compiler_type)
-        return strategy.get_flags(config)
+        lines = strategy.get_flags(config)
+
+        # Append custom flags if provided
+        if config.custom_flags:
+            if not lines:
+                lines = []
+            lines.append("")
+            lines.append("# Custom compiler and linker flags")
+
+            # C++ flags
+            if "cxx" in config.custom_flags:
+                cxx_flags = config.custom_flags["cxx"]
+                lines.append(f'string(APPEND CMAKE_CXX_FLAGS_INIT " {cxx_flags}")')
+
+            # C flags
+            if "c" in config.custom_flags:
+                c_flags = config.custom_flags["c"]
+                lines.append(f'string(APPEND CMAKE_C_FLAGS_INIT " {c_flags}")')
+
+            # Linker flags (both shared and exe)
+            if "linker" in config.custom_flags:
+                linker_flags = config.custom_flags["linker"]
+                lines.append(
+                    f'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " {linker_flags}")'
+                )
+                lines.append(
+                    f'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " {linker_flags}")'
+                )
+
+            # Exe linker flags only
+            if "exe_linker" in config.custom_flags:
+                exe_linker_flags = config.custom_flags["exe_linker"]
+                lines.append(
+                    f'string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT " {exe_linker_flags}")'
+                )
+
+            # Shared linker flags only
+            if "shared_linker" in config.custom_flags:
+                shared_linker_flags = config.custom_flags["shared_linker"]
+                lines.append(
+                    f'string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " {shared_linker_flags}")'
+                )
+
+        return lines
 
     def _generate_caching_config(self, config: ToolchainFileConfig) -> List[str]:
         """Generate build caching configuration.

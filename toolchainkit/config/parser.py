@@ -50,6 +50,7 @@ class BuildConfig:
     backend: str = "ninja"  # 'ninja', 'make', 'msbuild', 'xcode'
     parallel: str = "auto"  # 'auto' or number
     caching: CachingConfig = field(default_factory=CachingConfig)
+    flags: Optional[Dict[str, str]] = None  # Custom compiler/linker flags
 
 
 @dataclass
@@ -223,8 +224,24 @@ def _parse_build_config(data: dict) -> BuildConfig:
         remote=caching_data.get("remote"),
     )
 
+    # Parse flags if present
+    flags = data.get("flags")
+    if flags is not None:
+        # Validate flags structure
+        if not isinstance(flags, dict):
+            raise ConfigError("build.flags must be a dictionary")
+        valid_flag_keys = {"cxx", "c", "linker", "shared_linker", "exe_linker"}
+        invalid_keys = set(flags.keys()) - valid_flag_keys
+        if invalid_keys:
+            raise ConfigError(
+                f"Invalid flag keys: {invalid_keys} (expected one of {valid_flag_keys})"
+            )
+
     return BuildConfig(
-        backend=backend, parallel=data.get("parallel", "auto"), caching=caching
+        backend=backend,
+        parallel=data.get("parallel", "auto"),
+        caching=caching,
+        flags=flags,
     )
 
 

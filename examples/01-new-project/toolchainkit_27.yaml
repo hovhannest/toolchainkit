@@ -1,18 +1,21 @@
 version: 1
 project:
-  name: example-project
+  name: command_engine
   version: 0.1.0
-  description: LLVM + No Package Manager
+  description: LLVM + Ninja (Debug with AddressSanitizer)
 toolchains:
-  llvm-18:
+  llvm-21:
     type: llvm
-    version: 18.1.8
+    version: 21.1.7
     stdlib: libc++
 defaults:
-  toolchain: llvm-18
-  build_type: Release
+  toolchain: llvm-21
+  build_type: Debug
   generator: Ninja
 build:
   types:
-  - Release
+  - Debug
   parallel_jobs: auto
+  flags:
+    cxx: -fsanitize=address -fno-omit-frame-pointer -g
+    linker: -fsanitize=address
