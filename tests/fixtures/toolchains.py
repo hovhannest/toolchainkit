@@ -38,8 +38,24 @@ def mock_llvm_toolchain(tmp_path) -> Path:
     bin_dir = toolchain_root / "bin"
     bin_dir.mkdir()
 
-    exe_ext = ".exe" if platform.system() == "Windows" else ""
-    for executable in ["clang", "clang++", "clang-format", "llvm-ar", "lld", "ld.lld"]:
+    if platform.system() == "Windows":
+        # Windows uses clang-cl (MSVC-compatible driver)
+        executables = [
+            "clang-cl",
+            "clang",
+            "clang++",
+            "clang-format",
+            "llvm-ar",
+            "llvm-lib",
+            "lld",
+            "lld-link",
+        ]
+        exe_ext = ".exe"
+    else:
+        executables = ["clang", "clang++", "clang-format", "llvm-ar", "lld", "ld.lld"]
+        exe_ext = ""
+
+    for executable in executables:
         exe_path = bin_dir / f"{executable}{exe_ext}"
         exe_path.write_text(f"#!/bin/bash\necho {executable} mock\n")
         if platform.system() != "Windows":

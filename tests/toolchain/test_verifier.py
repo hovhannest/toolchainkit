@@ -159,12 +159,12 @@ class TestFilePresenceCheck:
         assert result.passed is True
 
     def test_windows_exe_extension(self, tmp_path, windows_platform, llvm_spec):
-        """Test that .exe extension is expected on Windows."""
+        """Test that Windows uses clang-cl executables."""
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
-        (bin_dir / "clang.exe").touch()
-        (bin_dir / "clang++.exe").touch()
-        (bin_dir / "lld.exe").touch()
+        # Windows uses clang-cl (MSVC-compatible driver)
+        (bin_dir / "clang-cl.exe").touch()
+        (bin_dir / "lld-link.exe").touch()
 
         check = FilePresenceCheck(windows_platform)
         result = check.check(tmp_path, llvm_spec)

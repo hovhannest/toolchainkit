@@ -271,8 +271,10 @@ class PathSearcher:
         extractor = CompilerVersionExtractor()
 
         # Search for various C++ compilers
+        # clang-cl.exe is LLVM's MSVC-compatible driver on Windows
         compilers = {
             "clang++": "llvm",
+            "clang-cl.exe": "llvm",  # MSVC-compatible Clang on Windows
             "g++": "gcc",
             "cl.exe": "msvc",
         }
@@ -328,7 +330,11 @@ class PathSearcher:
 
         # Find C compiler
         if toolchain_type == "llvm":
-            c_compiler_name = "clang"
+            # Check if this is clang-cl (MSVC-compatible)
+            if "clang-cl" in compiler_path.name.lower():
+                c_compiler_name = "clang-cl"
+            else:
+                c_compiler_name = "clang"
         elif toolchain_type == "gcc":
             c_compiler_name = "gcc"
         elif toolchain_type == "msvc":

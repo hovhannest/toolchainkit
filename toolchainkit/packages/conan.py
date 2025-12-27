@@ -146,8 +146,16 @@ class ConanIntegration(PackageManager):
         conan_compiler = self._get_conan_compiler(toolchain.type)
         compiler_version = toolchain.version.split(".")[0]  # Major version only
 
+        # Determine if using clang-cl (MSVC-compatible Clang on Windows)
+        is_clang_cl = toolchain.type.lower() == "clang-cl" or (
+            toolchain.type.lower() in ("llvm", "clang") and conan_os == "Windows"
+        )
+
         # Determine standard library
-        if hasattr(toolchain, "stdlib") and toolchain.stdlib:
+        # clang-cl and MSVC don't use libcxx setting (they use MSVC runtime)
+        if conan_compiler == "msvc" or is_clang_cl:
+            libcxx = None  # MSVC runtime, no libcxx setting
+        elif hasattr(toolchain, "stdlib") and toolchain.stdlib:
             if "libc++" in str(toolchain.stdlib).lower():
                 libcxx = "libc++"
             elif "libstdc++" in str(toolchain.stdlib).lower():
@@ -158,19 +166,30 @@ class ConanIntegration(PackageManager):
             # Default based on compiler
             libcxx = "libc++" if conan_compiler == "clang" else "libstdc++"
 
-        # Generate profile content
-        profile_content = f"""[settings]
-os={conan_os}
-arch={conan_arch}
-compiler={conan_compiler}
-compiler.version={compiler_version}
-compiler.libcxx={libcxx}
-compiler.cppstd=17
-build_type=Release
+        # Build libcxx line (empty for MSVC/clang-cl)
+        libcxx_line = f"compiler.libcxx={libcxx}" if libcxx else ""
 
-[conf]
-tools.cmake.cmaketoolchain:generator=Ninja
-"""
+        # Generate profile content
+        # Note: libcxx_line is empty for MSVC/clang-cl (they use MSVC runtime)
+        profile_lines = [
+            "[settings]",
+            f"os={conan_os}",
+            f"arch={conan_arch}",
+            f"compiler={conan_compiler}",
+            f"compiler.version={compiler_version}",
+        ]
+        if libcxx_line:
+            profile_lines.append(libcxx_line)
+        profile_lines.extend(
+            [
+                "compiler.cppstd=17",
+                "build_type=Release",
+                "",
+                "[conf]",
+                "tools.cmake.cmaketoolchain:generator=Ninja",
+            ]
+        )
+        profile_content = "\n".join(profile_lines) + "\n"
 
         # Write profile
         try:
@@ -488,6 +507,7 @@ endif()
         compiler_map = {
             "llvm": "clang",
             "clang": "clang",
+            "clang-cl": "clang",  # clang-cl uses clang compiler with MSVC runtime
             "gcc": "gcc",
             "msvc": "msvc",
             "apple-clang": "apple-clang",

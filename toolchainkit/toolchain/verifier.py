@@ -145,12 +145,18 @@ class FilePresenceCheck:
 
     def _llvm_files(self) -> List[str]:
         """Expected files for LLVM/Clang toolchain."""
-        exe = ".exe" if self.platform.os == "windows" else ""
-        return [
-            f"bin/clang{exe}",
-            f"bin/clang++{exe}",
-            f"bin/lld{exe}",
-        ]
+        if self.platform.os == "windows":
+            # On Windows, use clang-cl (MSVC-compatible driver)
+            return [
+                "bin/clang-cl.exe",
+                "bin/lld-link.exe",
+            ]
+        else:
+            return [
+                "bin/clang",
+                "bin/clang++",
+                "bin/lld",
+            ]
 
     def _gcc_files(self) -> List[str]:
         """Expected files for GCC toolchain."""
@@ -299,11 +305,13 @@ class ExecutabilityCheck:
         Returns:
             Path to compiler executable, or None if unknown type
         """
-        exe = ".exe" if self.platform.os == "windows" else ""
-
         if spec.type == "llvm":
-            return toolchain_path / f"bin/clang++{exe}"
+            if self.platform.os == "windows":
+                return toolchain_path / "bin/clang-cl.exe"
+            else:
+                return toolchain_path / "bin/clang++"
         elif spec.type == "gcc":
+            exe = ".exe" if self.platform.os == "windows" else ""
             return toolchain_path / f"bin/g++{exe}"
         elif spec.type == "msvc":
             return toolchain_path / "bin/Hostx64/x64/cl.exe"
@@ -501,6 +509,13 @@ int main() {
             try:
                 # Build compile command
                 if spec.type == "msvc":
+                    compile_cmd = [
+                        str(compiler_path),
+                        str(source_file),
+                        f"/Fe:{output_file}",
+                    ]
+                elif spec.type == "llvm" and self.platform.os == "windows":
+                    # clang-cl uses MSVC-compatible flags
                     compile_cmd = [
                         str(compiler_path),
                         str(source_file),
