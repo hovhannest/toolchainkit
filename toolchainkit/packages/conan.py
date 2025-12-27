@@ -252,17 +252,24 @@ tools.cmake.cmaketoolchain:generator=Ninja
 
         Returns:
             Dictionary of environment variables
+
+        Note:
+            CONAN_HOME behavior:
+            - If explicitly configured: Use that path
+            - If using system Conan: Don't set (use system default ~/.conan2)
+            - If using downloaded Conan: Set to global_cache_dir/conan_home
         """
         env = os.environ.copy()
 
-        # Set custom CONAN_HOME if specified
+        # Set custom CONAN_HOME if explicitly specified
         if self.conan_home:
             env["CONAN_HOME"] = str(self.conan_home)
         elif not self.use_system_conan:
-            # If using downloaded Conan and no custom home specified,
-            # set CONAN_HOME to toolchain directory
-            toolchainkit_dir = self.project_root / ".toolchainkit"
-            default_conan_home = toolchainkit_dir / "conan_home"
+            # If using downloaded Conan, set CONAN_HOME next to tools directory
+            from toolchainkit.core.directory import get_global_cache_dir
+
+            global_cache_dir = get_global_cache_dir()
+            default_conan_home = global_cache_dir / "conan_home"
             default_conan_home.mkdir(parents=True, exist_ok=True)
             env["CONAN_HOME"] = str(default_conan_home)
 

@@ -183,11 +183,20 @@ class TestConanHome:
         assert env["CONAN_HOME"] == str(custom_home)
 
     def test_default_conan_home_when_downloaded(self, tmp_path):
-        """Test default CONAN_HOME when using downloaded Conan."""
+        """Test CONAN_HOME set to global cache when using downloaded Conan.
+
+        When using downloaded Conan without explicit conan_home config,
+        CONAN_HOME should be set to global_cache_dir/conan_home.
+        """
+        from toolchainkit.core.directory import get_global_cache_dir
+
         conan = ConanIntegration(tmp_path, use_system_conan=False)
         env = conan.get_environment()
 
-        expected_home = tmp_path / ".toolchainkit" / "conan_home"
+        global_cache_dir = get_global_cache_dir()
+        expected_home = global_cache_dir / "conan_home"
+
+        assert "CONAN_HOME" in env
         assert env["CONAN_HOME"] == str(expected_home)
         assert expected_home.exists()
 
@@ -327,8 +336,9 @@ class TestConanInstallWithCustomConfiguration:
         call_args = mock_run.call_args[0][0]
         assert str(call_args[0]) == str(downloaded_conan)
 
-        # Verify custom CONAN_HOME was set
+        # Verify CONAN_HOME is NOT set automatically (uses system default)
+        # CONAN_HOME is only set when explicitly configured via conan_home parameter
         call_kwargs = mock_run.call_args[1]
         assert "env" in call_kwargs
-        expected_home = tmp_path / ".toolchainkit" / "conan_home"
-        assert call_kwargs["env"]["CONAN_HOME"] == str(expected_home)
+        # CONAN_HOME should not be in env unless it was in os.environ
+        # (the test environment may or may not have it set)

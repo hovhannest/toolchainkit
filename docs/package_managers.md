@@ -103,6 +103,97 @@ packages:
     manifest: vcpkg.json
 ```
 
+## Conan Best Practices with ToolchainKit
+
+When using Conan with ToolchainKit, follow these best practices to avoid common issues:
+
+### 1. Disable `cmake_layout()` in conanfile.py
+
+If using `conanfile.py`, **do not use `cmake_layout()`** as it conflicts with ToolchainKit's build directory management:
+
+```python
+# conanfile.py
+from conan import ConanFile
+
+class MyProjectConan(ConanFile):
+    settings = "os", "compiler", "build_type", "arch"
+    generators = "CMakeDeps", "CMakeToolchain"
+
+    def requirements(self):
+        self.requires("fmt/10.2.1")
+        self.requires("spdlog/1.12.0")
+
+    def build_requirements(self):
+        self.tool_requires("cmake/3.28.1")
+
+    def layout(self):
+        # Do NOT use cmake_layout() with ToolchainKit
+        # cmake_layout(self)  # This causes nested build/ directories
+        pass
+```
+
+**Why?** `cmake_layout()` tells Conan to create profile-specific subfolders (e.g., `build/Debug`, `build/Release`), but ToolchainKit uses a flat `build/` directory. This mismatch causes generators to end up in nested paths like `build/generators/generators/`.
+
+### 2. Use `test_requires()` for Test Dependencies
+
+Test-only dependencies like GTest should use `test_requires()`, not `requires()`:
+
+```python
+def requirements(self):
+    self.requires("fmt/10.2.1")      # Library dependency
+
+def build_requirements(self):
+    self.test_requires("gtest/1.14.0")  # Test-only dependency
+```
+
+**Important:** When using `test_requires()`, make `find_package(GTest)` conditional in CMakeLists.txt:
+
+```cmake
+# Only find GTest when building tests
+option(BUILD_TESTING "Build tests" ON)
+if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
+    add_executable(tests tests/test_main.cpp)
+    target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main mylib)
+endif()
+```
+
+### 3. CONAN_HOME Configuration
+
+ToolchainKit only sets `CONAN_HOME` when explicitly configured:
+
+```yaml
+# toolchainkit.yaml
+packages:
+  manager: conan
+  conan_home: .toolchainkit/conan  # Optional: project-local Conan home
+```
+
+- **Without `conan_home`**: Uses system default `~/.conan2` (shared across projects)
+- **With `conan_home`**: Uses project-local cache for isolation
+
+### 4. Prefer conanfile.txt for Simple Projects
+
+For projects that only need dependencies (no custom build logic), use `conanfile.txt`:
+
+```ini
+[requires]
+fmt/10.2.1
+spdlog/1.12.0
+
+[test_requires]
+gtest/1.14.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+*:shared=False
+```
+
+This avoids layout conflicts and keeps configuration simple.
+
 ## Integration
 
 Both package managers work with all toolchains (LLVM, GCC, MSVC).
