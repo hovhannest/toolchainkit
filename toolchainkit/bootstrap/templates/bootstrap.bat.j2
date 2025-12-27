@@ -22,6 +22,10 @@ if %errorlevel% equ 0 (
 
 echo.
 
+REM Set CONAN_HOME to ToolchainKit managed directory
+set CONAN_HOME=%USERPROFILE%\.toolchainkit\conan_home
+echo CONAN_HOME: %CONAN_HOME%
+
 {% if env_vars %}
 REM Environment Variables
 echo Setting environment variables...

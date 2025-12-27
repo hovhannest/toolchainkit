@@ -132,7 +132,7 @@ class TestConanProfileGeneration:
                 assert "compiler=clang" in profile_content
 
     def test_generate_conan_profile_windows(self):
-        """Test generating Conan profile for Windows (MSVC)."""
+        """Test generating Conan profile for Windows (LLVM uses Clang profile)."""
         project_root = Path("/test/project")
         toolchain_name = "llvm-18"
         toolchain_path = Path("C:\\cache\\llvm-18")
@@ -149,7 +149,8 @@ class TestConanProfileGeneration:
                 mock_write.assert_called_once()
                 profile_content = mock_write.call_args[0][0]
                 assert "os=Windows" in profile_content
-                assert "compiler=msvc" in profile_content
+                # LLVM toolchain uses clang profile (not msvc) to avoid MSVC-specific flags
+                assert "compiler=clang" in profile_content
 
     def test_generate_conan_profile_macos(self):
         """Test generating Conan profile for macOS."""

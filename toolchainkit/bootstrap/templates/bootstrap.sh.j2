@@ -66,6 +66,10 @@ fi
 
 echo ""
 
+# Set CONAN_HOME to ToolchainKit managed directory
+export CONAN_HOME="$HOME/.toolchainkit/conan_home"
+echo "CONAN_HOME: $CONAN_HOME"
+
 {% if env_vars %}
 # Environment Variables
 echo "Setting environment variables..."

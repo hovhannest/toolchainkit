@@ -22,6 +22,11 @@ if ($ToolchainType -match "gcc") {
 
 Write-Host ""
 
+# Set CONAN_HOME to ToolchainKit managed directory
+$ToolchainKitHome = Join-Path $env:USERPROFILE ".toolchainkit"
+$env:CONAN_HOME = Join-Path $ToolchainKitHome "conan_home"
+Write-Host "CONAN_HOME: $env:CONAN_HOME" -ForegroundColor Cyan
+
 {% if env_vars %}
 # Environment Variables
 Write-Host "Setting environment variables..." -ForegroundColor Cyan
