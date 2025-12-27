@@ -147,9 +147,9 @@ class ConanIntegration(PackageManager):
         compiler_version = toolchain.version.split(".")[0]  # Major version only
 
         # Determine if using clang-cl (MSVC-compatible Clang on Windows)
-        is_clang_cl = toolchain.type.lower() == "clang-cl" or (
-            toolchain.type.lower() in ("llvm", "clang") and conan_os == "Windows"
-        )
+        # Only treat as clang-cl if explicitly specified - don't auto-detect
+        # because users may want to use clang++ with libc++ on Windows
+        is_clang_cl = toolchain.type.lower() == "clang-cl"
 
         # Determine standard library
         # clang-cl and MSVC don't use libcxx setting (they use MSVC runtime)

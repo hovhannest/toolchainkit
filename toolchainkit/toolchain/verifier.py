@@ -146,9 +146,10 @@ class FilePresenceCheck:
     def _llvm_files(self) -> List[str]:
         """Expected files for LLVM/Clang toolchain."""
         if self.platform.os == "windows":
-            # On Windows, use clang-cl (MSVC-compatible driver)
+            # On Windows, LLVM includes both clang-cl (MSVC-compatible) and clang++
+            # Check for clang++.exe which is always present; clang-cl.exe is optional
             return [
-                "bin/clang-cl.exe",
+                "bin/clang++.exe",
                 "bin/lld-link.exe",
             ]
         else:
