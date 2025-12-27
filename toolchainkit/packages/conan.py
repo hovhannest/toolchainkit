@@ -326,6 +326,10 @@ tools.cmake.cmaketoolchain:generator=Ninja
             f"build_type={build_type}",
         ]
 
+        # Disable cmake_layout's subfolder creation to prevent nested generators
+        # This ensures generators go directly to build/ instead of build/Release/generators/
+        cmd.extend(["-c", "tools.cmake.cmake_layout:build_folder="])
+
         # Add profile if provided
         # Use --profile:all to set both host and build profiles to the same profile
         # This ensures Conan has a build profile when cross-compiling or using custom profiles
