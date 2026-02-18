@@ -9,6 +9,8 @@
 
 > **⚠️ Alpha Release (v0.1.0)**: Core library is feature-complete and well-tested (2385 passing tests), but CLI tools are still in development. Suitable for integration into build systems and CI/CD pipelines via Python API.
 
+This project is no longer supported. Use Mise instead https://github.com/jdx/mise
+
 ToolchainKit is a Python library that manages C++ toolchains, generates CMake configurations, and orchestrates build dependencies. It provides programmatic control over compiler toolchains (LLVM, GCC, MSVC), package managers (Conan, vcpkg), build caching (sccache, ccache), and cross-compilation—all with zero system dependencies.
 
 ## Features
